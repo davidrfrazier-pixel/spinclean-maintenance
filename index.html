@@ -233,6 +233,62 @@
 
   .dot-mini { display: inline-flex; gap: 4px; flex-wrap: wrap; margin-top: 10px; }
   .dot-m { width: 40px; height: 26px; border-radius: 5px; font-size: 9px; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; border: 0.5px solid transparent; }
+
+  /* Locations page */
+  .loc-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin-bottom: 24px; }
+  .loc-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; position: relative; transition: border-color 0.15s; }
+  .loc-card:hover { border-color: var(--border2); }
+  .loc-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+  .loc-card-name { font-size: 15px; font-weight: 500; }
+  .loc-card-address { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .loc-card-stats { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .loc-stat { font-size: 11px; color: var(--text2); background: var(--bg2); padding: 3px 9px; border-radius: 10px; }
+  .loc-stat.warn { background: var(--amber-bg); color: var(--amber-text); }
+  .loc-stat.danger { background: var(--red-bg); color: var(--red); }
+  .loc-card-actions { display: flex; gap: 7px; border-top: 0.5px solid var(--border); padding-top: 11px; }
+  .loc-edit-btn { font-size: 12px; padding: 5px 11px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: transparent; cursor: pointer; color: var(--text2); transition: all 0.15s; font-weight: 500; }
+  .loc-edit-btn:hover { background: var(--bg2); color: var(--text); }
+  .loc-view-btn { font-size: 12px; padding: 5px 11px; border-radius: var(--radius); border: 0.5px solid var(--blue); background: var(--blue-bg); cursor: pointer; color: var(--blue-text); font-weight: 500; transition: all 0.15s; }
+  .loc-view-btn:hover { background: var(--blue); color: #fff; }
+  .loc-initials { width: 38px; height: 38px; border-radius: var(--radius); background: var(--blue-bg); color: var(--blue-text); font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  /* Edit/Add location modal */
+  .loc-modal-wrap { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px 16px; overflow-y: auto; }
+  .loc-modal { background: var(--bg); border-radius: var(--radius-lg); border: 0.5px solid var(--border); padding: 22px; width: 100%; max-width: 480px; }
+  .loc-modal-title { font-size: 16px; font-weight: 500; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; }
+  .loc-modal-close { background: none; border: none; cursor: pointer; color: var(--text2); font-size: 18px; line-height: 1; padding: 0; }
+  .loc-modal-close:hover { color: var(--text); }
+  .loc-section-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text2); margin: 16px 0 10px; }
+  .loc-section-label:first-of-type { margin-top: 0; }
+  .delete-zone { margin-top: 20px; padding-top: 16px; border-top: 0.5px solid var(--border); }
+  .delete-zone p { font-size: 12px; color: var(--text2); margin-bottom: 10px; }
+  .btn-delete { font-size: 12px; padding: 6px 14px; border-radius: var(--radius); border: 0.5px solid var(--red-border); background: var(--red-bg); color: var(--red); cursor: pointer; font-weight: 500; transition: all 0.15s; }
+  .btn-delete:hover { background: var(--red); color: #fff; }
+
+  /* CSV Upload */
+  .csv-drop-zone { border: 2px dashed var(--border2); border-radius: var(--radius-lg); padding: 32px 20px; text-align: center; cursor: pointer; transition: all .15s; background: var(--bg); }
+  .csv-drop-zone:hover, .csv-drop-zone.drag-over { border-color: var(--blue); background: var(--blue-bg); }
+  .csv-drop-zone input[type=file] { display: none; }
+  .csv-drop-label { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+  .csv-drop-sub { font-size: 12px; color: var(--text2); }
+  .csv-preview-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .csv-preview-table th { text-align: left; padding: 6px 10px; background: var(--bg2); border-bottom: 0.5px solid var(--border); font-weight: 500; color: var(--text2); font-size: 11px; text-transform: uppercase; letter-spacing: .03em; }
+  .csv-preview-table td { padding: 7px 10px; border-bottom: 0.5px solid var(--border); vertical-align: top; }
+  .csv-preview-table tr:last-child td { border-bottom: none; }
+  .csv-preview-table tr.row-ok td:first-child { border-left: 3px solid var(--green); }
+  .csv-preview-table tr.row-err td:first-child { border-left: 3px solid var(--red); }
+  .csv-row-issue { font-size: 11px; color: var(--red); margin-top: 2px; }
+  .csv-summary { display: flex; gap: 12px; flex-wrap: wrap; padding: 12px 14px; background: var(--bg2); border-radius: var(--radius); margin-bottom: 14px; }
+  .csv-sum-item { font-size: 12px; display: flex; align-items: center; gap: 5px; }
+  .csv-sum-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .setup-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 32px 24px; text-align: center; max-width: 460px; margin: 40px auto; }
+  .setup-title { font-size: 18px; font-weight: 500; margin-bottom: 8px; }
+  .setup-sub { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 20px; }
+  .setup-steps { text-align: left; background: var(--bg2); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 20px; }
+  .setup-step { display: flex; gap: 10px; font-size: 13px; margin-bottom: 10px; }
+  .setup-step:last-child { margin-bottom: 0; }
+  .step-n { width: 20px; height: 20px; border-radius: 50%; background: var(--blue); color: #fff; font-size: 11px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .info-banner { background: var(--blue-bg); border: 0.5px solid var(--blue-border); border-radius: var(--radius); padding: 12px 14px; font-size: 13px; color: var(--blue-text); margin-bottom: 14px; }
 </style>
 </head>
 <body>
@@ -285,6 +341,96 @@
   </div>
 </div>
 
+<!-- Location Add/Edit Modal -->
+<div class="loc-modal-wrap" id="loc-modal" style="display:none;">
+  <div class="loc-modal">
+    <div class="loc-modal-title">
+      <span id="loc-modal-title-text">Add location</span>
+      <button class="loc-modal-close" onclick="closeLocModal()">&#x2715;</button>
+    </div>
+
+    <div id="loc-form-error" class="error-banner" style="display:none;margin-bottom:14px;"></div>
+
+    <div class="loc-section-label">Basic info</div>
+    <div class="field-grid c2" style="margin-bottom:11px;">
+      <div class="field">
+        <label>Location name <span class="req">*</span></label>
+        <input id="lf-name" placeholder="e.g. Main St" />
+        <div class="field-err" id="lf-name-err" style="display:none;"></div>
+      </div>
+      <div class="field">
+        <label>Short code</label>
+        <input id="lf-code" placeholder="e.g. MAIN" maxlength="6" />
+        <div class="field-hint">Used for machine ID prefixes (optional)</div>
+      </div>
+    </div>
+
+    <div class="loc-section-label">Address</div>
+    <div class="field" style="margin-bottom:11px;">
+      <label>Street address <span class="req">*</span></label>
+      <input id="lf-address" placeholder="e.g. 112 N Main St" />
+      <div class="field-err" id="lf-address-err" style="display:none;"></div>
+    </div>
+    <div class="field-grid c3" style="margin-bottom:11px;">
+      <div class="field">
+        <label>City <span class="req">*</span></label>
+        <input id="lf-city" placeholder="Joplin" />
+        <div class="field-err" id="lf-city-err" style="display:none;"></div>
+      </div>
+      <div class="field">
+        <label>State</label>
+        <input id="lf-state" placeholder="MO" maxlength="2" style="text-transform:uppercase;" />
+      </div>
+      <div class="field">
+        <label>ZIP code</label>
+        <input id="lf-zip" placeholder="64801" maxlength="10" />
+      </div>
+    </div>
+
+    <div class="loc-section-label">Contact</div>
+    <div class="field-grid c2" style="margin-bottom:11px;">
+      <div class="field">
+        <label>Phone number</label>
+        <input id="lf-phone" placeholder="(417) 555-0100" type="tel" />
+      </div>
+      <div class="field">
+        <label>Manager name</label>
+        <input id="lf-manager" placeholder="e.g. Sarah T." />
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:11px;">
+      <label>Email</label>
+      <input id="lf-email" placeholder="location@example.com" type="email" />
+    </div>
+
+    <div class="loc-section-label">Hours & notes</div>
+    <div class="field-grid c2" style="margin-bottom:11px;">
+      <div class="field">
+        <label>Opening time</label>
+        <input id="lf-open" placeholder="e.g. 6:00 AM" />
+      </div>
+      <div class="field">
+        <label>Closing time</label>
+        <input id="lf-close" placeholder="e.g. 10:00 PM" />
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:18px;">
+      <label>Notes</label>
+      <textarea id="lf-notes" placeholder="Parking info, access codes, special instructions…"></textarea>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:8px;">
+      <button class="btn" onclick="closeLocModal()">Cancel</button>
+      <button class="btn primary" id="loc-save-btn" onclick="saveLocation()">Save location</button>
+    </div>
+
+    <div class="delete-zone" id="loc-delete-zone" style="display:none;">
+      <p>Removing a location will not delete its machines — they will still exist in the database but will no longer be associated with an active location.</p>
+      <button class="btn-delete" onclick="deleteLocation()">Remove this location</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ─── Supabase ────────────────────────────────────────────────────────────────
@@ -297,10 +443,10 @@ let state = {
   tab: 'dashboard',
   locId: null,
   locations: [],
-  machines: [],       // machines for current location
-  allMachines: {},    // { locId: [...] }
-  log: [],            // maintenance log for current location
-  todoChecked: {},    // { locId: { taskKey: true } }
+  machines: [],
+  allMachines: {},
+  log: [],
+  todoChecked: {},
   selectedMachineId: null,
   machineFilter: 'all',
   dashFilter: null,
@@ -310,74 +456,13 @@ let state = {
   addMachineSuccess: null,
   loading: true,
   dbError: null,
-  usingFallback: false,
+  editingLocId: null,
+  csvRows: [], csvUploading: false, csvDone: false, csvResults: null,
 };
-
-// ─── Fallback data (shown if DB not yet set up) ───────────────────────────────
-function makeFallbackLocations() {
-  return [
-    {id:'loc1', name:'Main St',   address:'112 N Main St'},
-    {id:'loc2', name:'Oak Ave',   address:'450 Oak Ave'},
-    {id:'loc3', name:'Riverside', address:'87 Riverside Blvd'},
-    {id:'loc4', name:'Eastside',  address:'321 E Commerce'},
-  ];
-}
-function randFrom(a){return a[Math.floor(Math.random()*a.length)];}
-function randInt(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
-function makeFallbackMachines(locId, locIdx) {
-  const wModels=['Speed Queen TR7000WN','Maytag MHN33PDCWW','UniMac UF35PVQS','Alliance FS0130CNVSP'];
-  const dModels=['Speed Queen DR7000WG','Maytag MDG25PNCWW','UniMac UT050PVQS','Alliance FT020ECVSP'];
-  const swVers=['3.1.2','3.2.0','3.3.1','4.0.0','4.1.0'];
-  const issues=['Vibration noise','Door latch issue','Error code E5','Drum won\'t spin','Coin acceptor jam','Water not draining','Won\'t heat','Control board fault'];
-  const ms=[];
-  for(let i=0;i<40;i++){
-    const type=i<20?'Washer':'Dryer';
-    const model=randFrom(type==='Washer'?wModels:dModels);
-    const mfgYear=randInt(2014,2021);
-    const installYear=mfgYear+randInt(0,1);
-    const lmDays=randInt(0,180);
-    const issueCount=Math.random()<0.2?randInt(2,5):(Math.random()<0.3?1:0);
-    const flagged=issueCount>=3;
-    const hasErr=Math.random()<0.07;
-    const status=flagged?'flagged':hasErr?'error':lmDays>90?'maintenance':'ok';
-    const hist=[];
-    let db=0;
-    for(let h=0;h<randInt(3,7);h++){
-      db+=randInt(10,60);
-      const d=new Date(2026,3,1);d.setDate(d.getDate()-db);
-      const isIss=Math.random()<0.3;
-      hist.push({
-        id:`h-${locIdx}-${i}-${h}`,
-        entry_type:isIss?(Math.random()<0.5?'issue':'repair'):'routine',
-        title:isIss?randFrom(issues):(Math.random()<0.5?'Routine maintenance':'Belt & filter check'),
-        technician:randFrom(['Mike R.','Sarah T.','Dave H.','Priya K.']),
-        notes:isIss?'Documented and addressed.':'All systems nominal.',
-        service_date:d.toISOString().split('T')[0],
-      });
-    }
-    ms.push({
-      id:`m-${locIdx}-${i}`,
-      location_id:locId,
-      machine_id:`${String.fromCharCode(65+locIdx)}-${String(i+1).padStart(2,'0')}`,
-      type,model,
-      software_version:randFrom(swVers),
-      manufactured_year:mfgYear,
-      install_year:installYear,
-      serial_number:`SN${randInt(100000,999999)}`,
-      status,flagged,
-      issue_count:issueCount,
-      notes:flagged?'Recurring issues — review service contract.':'',
-      last_service_date:new Date(new Date(2026,3,1).getTime()-lmDays*86400000).toISOString().split('T')[0],
-      _lastDays:lmDays,
-      _history:hist,
-    });
-  }
-  return ms;
-}
 
 // ─── DB helpers ──────────────────────────────────────────────────────────────
 async function loadLocations() {
-  const {data,error} = await db.from('locations').select('*').order('name');
+  const {data,error} = await db.from('locations').select('id,name,code,address,city,state,zip,phone,manager,email,hours_open,hours_close,notes,created_at').order('name');
   if(error) return null;
   return data;
 }
@@ -400,6 +485,10 @@ async function insertMachine(rec) {
   const {data,error} = await db.from('machines').insert([rec]).select().single();
   return {data,error};
 }
+async function insertMachines(recs) {
+  const {data,error} = await db.from('machines').insert(recs).select();
+  return {data,error};
+}
 async function insertLog(rec) {
   const {data,error} = await db.from('maintenance_log').insert([rec]).select().single();
   return {data,error};
@@ -412,29 +501,33 @@ async function updateMachineStatus(id, updates) {
   const {error} = await db.from('machines').update({...updates, updated_at: new Date().toISOString()}).eq('id',id);
   return error;
 }
+async function insertLocation(rec) {
+  const {data,error} = await db.from('locations').insert([rec]).select().single();
+  return {data,error};
+}
+async function updateLocation(id, rec) {
+  const {data,error} = await db.from('locations').update(rec).eq('id',id).select().single();
+  return {data,error};
+}
+async function deleteLocationDB(id) {
+  const {error} = await db.from('locations').delete().eq('id',id);
+  return error;
+}
 
 // ─── Bootstrap ───────────────────────────────────────────────────────────────
 async function init() {
   state.loading = true;
   render();
-
   const locs = await loadLocations();
   if (!locs) {
-    // DB not set up yet — use fallback demo data
-    state.usingFallback = true;
-    state.locations = makeFallbackLocations();
-    state.locId = state.locations[0].id;
-    state.locations.forEach((l,i) => {
-      state.allMachines[l.id] = makeFallbackMachines(l.id, i);
-    });
-    state.machines = state.allMachines[state.locId];
-    state.log = [];
-  } else {
-    state.locations = locs;
-    state.locId = locs.length ? locs[0].id : null;
-    if (state.locId) await switchLocation(state.locId, false);
+    state.dbError = 'Could not connect to database. Please run the SQL schema in your Supabase SQL Editor, then reload this page.';
+    state.loading = false;
+    render();
+    return;
   }
-
+  state.locations = locs;
+  state.locId = locs.length ? locs[0].id : null;
+  if (state.locId) await switchLocation(state.locId, false);
   state.loading = false;
   render();
 }
@@ -443,19 +536,12 @@ async function switchLocation(locId, doRender=true) {
   state.locId = locId;
   state.selectedMachineId = null;
   state.dashFilter = null;
-
-  if (state.usingFallback) {
-    state.machines = state.allMachines[locId] || [];
-    state.log = [];
-  } else {
-    if (!state.allMachines[locId]) {
-      const ms = await loadMachines(locId);
-      state.allMachines[locId] = ms || [];
-    }
-    state.machines = state.allMachines[locId];
-    state.log = await loadLog(locId);
+  if (!state.allMachines[locId]) {
+    const ms = await loadMachines(locId);
+    state.allMachines[locId] = ms || [];
   }
-
+  state.machines = state.allMachines[locId];
+  state.log = await loadLog(locId);
   if (doRender) render();
 }
 
@@ -464,9 +550,7 @@ function getMachine(id) { return state.machines.find(m=>m.id===id); }
 
 function daysSince(dateStr) {
   if (!dateStr) return 999;
-  const d = new Date(dateStr);
-  const now = new Date(2026,3,1);
-  return Math.floor((now - d) / 86400000);
+  return Math.floor((Date.now() - new Date(dateStr)) / 86400000);
 }
 
 function machineLastDays(m) {
@@ -494,7 +578,7 @@ function buildTodos(machines) {
     if(m.status==='error'&&!m.flagged) items.push({key:`err-${m.id}`, mid:m.id, priority:'critical', task:'Error reported — diagnose & repair', detail:'Machine reporting active error', meta:m.type+' · '+m.model});
     if(d>120&&!m.flagged&&m.status!=='error') items.push({key:`over-${m.id}`, mid:m.id, priority:'high', task:'Overdue maintenance', detail:`${d} days since last service`, meta:m.type+' · '+m.model});
     else if(d>90&&!m.flagged&&m.status!=='error') items.push({key:`due-${m.id}`, mid:m.id, priority:'high', task:'Routine maintenance due', detail:`${d} days since last service`, meta:m.type+' · '+m.model});
-    const age = m.install_year ? 2026 - m.install_year : 0;
+    const age = m.install_year ? new Date().getFullYear() - m.install_year : 0;
     if(age>=8&&d>60&&!m.flagged) items.push({key:`age-${m.id}`, mid:m.id, priority:'routine', task:'Aged machine check', detail:`Machine is ${age} years old`, meta:m.type+' · '+m.model});
   });
   const seen=new Set();
@@ -537,6 +621,8 @@ function renderNavRow() {
     {id:'maintenance',label:'Log'},
     {id:'alerts',label:'Alerts'},
     {id:'add',label:'+ Add Machine'},
+    {id:'csv',label:'Bulk Upload'},
+    {id:'locations',label:'Locations'},
   ];
   document.getElementById('nav-row').innerHTML =
     tabs.map(t=>`<button class="nav-tab ${state.tab===t.id?'active':''}" onclick="goTab('${t.id}')">${t.label}</button>`).join('') +
@@ -546,20 +632,30 @@ function renderNavRow() {
 
 function renderContent() {
   const el = document.getElementById('content');
-  if(state.loading){ el.innerHTML=`<div class="loading"><div class="spinner"></div> Loading…</div>`; return; }
-
-  if(state.usingFallback && state.tab !== 'add'){
-    el.innerHTML = `<div class="error-banner" style="margin-bottom:14px;">
-      <strong>Demo mode:</strong> Supabase tables not found. Run the SQL schema in your Supabase SQL Editor to enable live data. Data shown below is sample data.
-    </div>` + getTabHtml();
-  } else {
-    el.innerHTML = getTabHtml();
+  if(state.loading){ el.innerHTML='<div class="loading"><div class="spinner"></div> Loading...</div>'; return; }
+  if(state.dbError){
+    el.innerHTML=`<div class="setup-card">
+      <div class="setup-icon" style="font-size:28px;margin-bottom:12px;">&#9881;</div>
+      <div class="setup-title">Database not connected</div>
+      <div class="setup-sub">${state.dbError}</div>
+      <div class="setup-steps">
+        <div class="setup-step"><span class="step-n">1</span><span>Go to your Supabase project &rarr; SQL Editor</span></div>
+        <div class="setup-step"><span class="step-n">2</span><span>Paste and run the SQL schema from the setup guide</span></div>
+        <div class="setup-step"><span class="step-n">3</span><span>Reload this page</span></div>
+      </div>
+      <button class="btn primary" onclick="location.reload()">Reload</button>
+    </div>`;
+    return;
   }
+  el.innerHTML = getTabHtml();
   attachLogModalEvents();
 }
 
 function getTabHtml() {
   if(state.selectedMachineId) return renderDetail();
+  if(state.locations.length===0 && state.tab!=='locations' && state.tab!=='csv'){
+    return '<div class="setup-card"><div class="setup-icon" style="font-size:28px;margin-bottom:12px;">&#128205;</div><div class="setup-title">No locations yet</div><div class="setup-sub">Add your first laundromat location, then start adding machines to it.</div><button class="btn primary" onclick="goTab(\'locations\')">Add your first location</button></div>';
+  }
   switch(state.tab){
     case 'todo':        return renderTodo();
     case 'dashboard':   return renderDashboard();
@@ -567,6 +663,8 @@ function getTabHtml() {
     case 'maintenance': return renderLog();
     case 'alerts':      return renderAlerts();
     case 'add':         return renderAddMachine();
+    case 'csv':         return renderCsvUpload();
+    case 'locations':   return renderLocations();
   }
   return '';
 }
@@ -663,7 +761,7 @@ function machineCardHtml(m) {
       <span class="status-badge ${badgeCls}">${badgeLbl}</span>
     </div>
     <div class="machine-meta">${m.model}</div>
-    <div class="machine-meta">Last service: ${d<999?d+'d ago':'—'} · Age: ${m.install_year?2026-m.install_year+'yr':'—'}</div>
+    <div class="machine-meta">Last service: ${d<999?d+'d ago':'—'} · Age: ${m.install_year?new Date().getFullYear()-m.install_year+'yr':'—'}</div>
   </div>`;
 }
 
@@ -684,7 +782,7 @@ function renderMachines() {
       ).join('')}
     </div>
     <div class="machine-grid">
-      ${filtered.length===0?'<div class="empty-state">No machines match this filter.</div>':
+      ${filtered.length===0?`<div class="empty-state">${state.machines.length===0?'No machines at this location yet. <button class="btn primary" style="margin-top:8px;" onclick="goTab(\'add\')">Add machine</button> or <button class="btn" style="margin-top:8px;" onclick="goTab(\'csv\')">Bulk upload</button>':'No machines match this filter.'}</div>`:
         filtered.map(m=>machineCardHtml(m)).join('')}
     </div>`;
 }
@@ -694,11 +792,8 @@ function renderDetail() {
   const m = getMachine(state.selectedMachineId);
   if(!m) return '<div class="empty-state">Machine not found.</div>';
   const d = machineLastDays(m);
-  const age = m.install_year ? 2026 - m.install_year : null;
-  const hist = state.usingFallback ? (m._history||[]) : (state.log.filter(l=>{
-    const lid = l.machine_id || (l.machines && l.machines.id);
-    return lid === m.id;
-  }));
+  const age = m.install_year ? new Date().getFullYear() - m.install_year : null;
+  const hist = state.log.filter(l => l.machine_id === m.id);
 
   return `
     <button class="back-btn" onclick="clearMachine()">← Back</button>
@@ -760,10 +855,7 @@ function renderDetail() {
 
 // ─── Maintenance Log ──────────────────────────────────────────────────────────
 function renderLog() {
-  const entries = state.usingFallback
-    ? state.machines.flatMap(m=>(m._history||[]).map(h=>({...h, _machineId: m.machine_id, _machineType: m.type})))
-        .sort((a,b)=>new Date(b.service_date||b.date)-new Date(a.service_date||a.date)).slice(0,30)
-    : state.log.slice(0,30);
+  const entries = state.log.slice(0,30);
 
   return `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
@@ -849,7 +941,7 @@ function renderTodo() {
   return `
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
       <div style="font-size:15px;font-weight:500;">${loc?.name} — Daily tasks</div>
-      <div style="font-size:12px;color:var(--text2);">Apr 1, 2026</div>
+      <div style="font-size:12px;color:var(--text2);">${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</div>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
       <div style="font-size:11px;color:var(--text2);">${done} of ${total} completed</div>
@@ -872,6 +964,390 @@ function renderTodo() {
       <div class="section-title">Routine checks <span style="background:var(--blue-bg);color:var(--blue-text);font-size:10px;padding:1px 7px;border-radius:10px;">${routine.length}</span></div>
       ${routine.map(t=>todoItemHtml(t)).join('')}
     </div>`:''}`;
+}
+
+// ─── Locations page ───────────────────────────────────────────────────────────
+function renderLocations() {
+  const locs = state.locations;
+
+  function initials(name) {
+    return name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  }
+
+  const cards = locs.map(loc => {
+    const ms = state.allMachines[loc.id] || [];
+    const loaded = ms.length > 0;
+    const flagged = ms.filter(m=>m.flagged).length;
+    const errors = ms.filter(m=>m.status==='error').length;
+    const overdue = ms.filter(m=>machineLastDays(m)>90).length;
+    const total = ms.length;
+
+    const statPills = loaded ? `
+      <span class="loc-stat">${total} machine${total!==1?'s':''}</span>
+      ${flagged>0?`<span class="loc-stat danger">${flagged} flagged</span>`:''}
+      ${errors>0?`<span class="loc-stat danger">${errors} error${errors!==1?'s':''}</span>`:''}
+      ${overdue>0?`<span class="loc-stat warn">${overdue} overdue</span>`:''}
+      ${flagged===0&&errors===0&&overdue===0?`<span class="loc-stat">All clear</span>`:''}
+    ` : `<span class="loc-stat" style="cursor:pointer;" onclick="loadLocStats('${loc.id}')">Load stats</span>`;
+
+    const addrLine = [loc.address, loc.city, loc.state, loc.zip].filter(Boolean).join(', ');
+    const phone = loc.phone ? `<div style="font-size:12px;color:var(--text2);margin-top:3px;">${loc.phone}</div>` : '';
+    const manager = loc.manager ? `<div style="font-size:12px;color:var(--text2);margin-top:2px;">Manager: ${loc.manager}</div>` : '';
+    const hours = (loc.hours_open||loc.hours_close) ? `<div style="font-size:12px;color:var(--text2);margin-top:2px;">Hours: ${loc.hours_open||'—'} – ${loc.hours_close||'—'}</div>` : '';
+
+    return `
+      <div class="loc-card">
+        <div class="loc-card-header">
+          <div class="loc-initials">${initials(loc.name)}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="loc-card-name">${loc.name}</div>
+            ${addrLine?`<div class="loc-card-address">${addrLine}</div>`:''}
+            ${phone}${manager}${hours}
+          </div>
+        </div>
+        <div class="loc-card-stats">${statPills}</div>
+        <div class="loc-card-actions">
+          <button class="loc-edit-btn" onclick="openLocModal('${loc.id}')">Edit</button>
+          <button class="loc-view-btn" onclick="goLocFromCard('${loc.id}')">View machines →</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  const emptyState = locs.length === 0 ? `
+    <div class="empty-dashed" style="margin-bottom:20px;">
+      No locations yet. Add your first location to get started.
+    </div>` : '';
+
+  return `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div>
+        <div style="font-size:16px;font-weight:500;">Locations</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px;">${locs.length} location${locs.length!==1?'s':''} in your network</div>
+      </div>
+      <button class="btn primary" onclick="openLocModal(null)">+ Add location</button>
+    </div>
+
+    ${emptyState}
+    <div class="loc-cards">${cards}</div>
+
+  `;
+}
+
+async function loadLocStats(locId) {
+  if(!state.allMachines[locId]) {
+    const ms = await loadMachines(locId);
+    state.allMachines[locId] = ms || [];
+  }
+  render();
+}
+
+function goLocFromCard(locId) {
+  state.locId = locId;
+  state.tab = 'dashboard';
+  state.selectedMachineId = null;
+  switchLocation(locId);
+}
+
+// ─── Location modal ───────────────────────────────────────────────────────────
+function openLocModal(locId) {
+  state.editingLocId = locId;
+  const modal = document.getElementById('loc-modal');
+  const titleEl = document.getElementById('loc-modal-title-text');
+  const deleteZone = document.getElementById('loc-delete-zone');
+  const errEl = document.getElementById('loc-form-error');
+  errEl.style.display = 'none';
+
+  // Clear all fields first
+  ['lf-name','lf-code','lf-address','lf-city','lf-state','lf-zip','lf-phone','lf-manager','lf-email','lf-open','lf-close','lf-notes'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  ['lf-name-err','lf-address-err','lf-city-err'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+  });
+
+  if(locId) {
+    const loc = state.locations.find(l=>l.id===locId);
+    titleEl.textContent = `Edit location — ${loc?.name||''}`;
+    deleteZone.style.display = 'block';
+    if(loc) {
+      document.getElementById('lf-name').value = loc.name||'';
+      document.getElementById('lf-code').value = loc.code||'';
+      document.getElementById('lf-address').value = loc.address||'';
+      document.getElementById('lf-city').value = loc.city||'';
+      document.getElementById('lf-state').value = loc.state||'';
+      document.getElementById('lf-zip').value = loc.zip||'';
+      document.getElementById('lf-phone').value = loc.phone||'';
+      document.getElementById('lf-manager').value = loc.manager||'';
+      document.getElementById('lf-email').value = loc.email||'';
+      document.getElementById('lf-open').value = loc.hours_open||'';
+      document.getElementById('lf-close').value = loc.hours_close||'';
+      document.getElementById('lf-notes').value = loc.notes||'';
+    }
+  } else {
+    titleEl.textContent = 'Add location';
+    deleteZone.style.display = 'none';
+  }
+  modal.style.display = 'flex';
+}
+
+function closeLocModal() {
+  document.getElementById('loc-modal').style.display = 'none';
+  state.editingLocId = null;
+}
+
+function getLocFormValues() {
+  const g = id => (document.getElementById(id)||{}).value||'';
+  return {
+    name:        g('lf-name').trim(),
+    code:        g('lf-code').trim().toUpperCase()||null,
+    address:     g('lf-address').trim(),
+    city:        g('lf-city').trim(),
+    state:       g('lf-state').trim().toUpperCase()||null,
+    zip:         g('lf-zip').trim()||null,
+    phone:       g('lf-phone').trim()||null,
+    manager:     g('lf-manager').trim()||null,
+    email:       g('lf-email').trim()||null,
+    hours_open:  g('lf-open').trim()||null,
+    hours_close: g('lf-close').trim()||null,
+    notes:       g('lf-notes').trim()||null,
+  };
+}
+
+async function saveLocation() {
+  const f = getLocFormValues();
+  let valid = true;
+
+  // Validate required fields
+  const nameErr = document.getElementById('lf-name-err');
+  const addrErr = document.getElementById('lf-address-err');
+  const cityErr = document.getElementById('lf-city-err');
+  const formErr = document.getElementById('loc-form-error');
+
+  if(!f.name) {
+    nameErr.textContent = 'Location name is required'; nameErr.style.display='block'; valid=false;
+  } else { nameErr.style.display='none'; }
+
+  if(!f.address) {
+    addrErr.textContent = 'Street address is required'; addrErr.style.display='block'; valid=false;
+  } else { addrErr.style.display='none'; }
+
+  if(!f.city) {
+    cityErr.textContent = 'City is required'; cityErr.style.display='block'; valid=false;
+  } else { cityErr.style.display='none'; }
+
+  if(!valid) return;
+
+  const saveBtn = document.getElementById('loc-save-btn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving…';
+  formErr.style.display = 'none';
+
+  if(state.editingLocId) {
+    const {data, error} = await updateLocation(state.editingLocId, f);
+    if(error) {
+      formErr.textContent = 'Error saving: ' + error.message;
+      formErr.style.display = 'block';
+      saveBtn.disabled=false; saveBtn.textContent='Save location'; return;
+    }
+    const idx = state.locations.findIndex(l=>l.id===state.editingLocId);
+    if(idx>=0) state.locations[idx] = {...state.locations[idx], ...f};
+  } else {
+    const {data, error} = await insertLocation(f);
+    if(error) {
+      formErr.textContent = 'Error saving: ' + error.message;
+      formErr.style.display = 'block';
+      saveBtn.disabled=false; saveBtn.textContent='Save location'; return;
+    }
+    if(data) {
+      state.locations.push(data);
+      state.allMachines[data.id] = [];
+    }
+  }
+
+  saveBtn.disabled = false;
+  saveBtn.textContent = 'Save location';
+  closeLocModal();
+  render();
+}
+
+async function deleteLocation() {
+  const locId = state.editingLocId;
+  if(!locId) return;
+  const loc = state.locations.find(l=>l.id===locId);
+  if(!confirm(`Remove "${loc?.name||'this location'}"? Machines assigned to it will remain in the database.`)) return;
+
+  const error = await deleteLocationDB(locId);
+  if(error) { alert('Error removing location: '+error.message); return; }
+  state.locations = state.locations.filter(l=>l.id!==locId);
+  delete state.allMachines[locId];
+  if(state.locId===locId) {
+    state.locId = state.locations[0]?.id||null;
+    if(state.locId) await switchLocation(state.locId, false);
+  }
+  closeLocModal();
+  render();
+}
+
+
+// --- CSV Bulk Upload ---
+const CSV_COLS=['machine_id','type','model','serial_number','manufactured_year','install_year','software_version','status','capacity','voltage','vendor','purchase_price','last_service_date','notes'];
+const CSV_REQUIRED=['machine_id','type','model','serial_number'];
+
+function renderCsvUpload(){
+  const locs=state.locations;
+  if(locs.length===0) return '<div class="empty-dashed">Add at least one location before bulk uploading machines.</div>';
+  const locOptions=locs.map(l=>`<option value="${l.id}">${l.name}${l.address?' \u2014 '+l.address:''}</option>`).join('');
+  const rows=state.csvRows;
+  const hasParsed=rows.length>0;
+  const okRows=rows.filter(r=>r._valid);
+  const errRows=rows.filter(r=>!r._valid);
+  const summaryHtml=hasParsed?`<div class="csv-summary">
+    <div class="csv-sum-item"><div class="csv-sum-dot" style="background:var(--green)"></div>${okRows.length} ready to import</div>
+    ${errRows.length>0?`<div class="csv-sum-item"><div class="csv-sum-dot" style="background:var(--red)"></div>${errRows.length} row${errRows.length!==1?'s':''} with errors</div>`:''}
+  </div>`:'';
+  const tableHtml=hasParsed?`<div style="overflow-x:auto;border:0.5px solid var(--border);border-radius:var(--radius-lg);margin-bottom:14px;">
+    <table class="csv-preview-table">
+      <thead><tr><th>#</th><th>Machine ID</th><th>Type</th><th>Model</th><th>Serial</th><th>Mfg Yr</th><th>Inst Yr</th><th>SW Ver</th><th>Status</th></tr></thead>
+      <tbody>${rows.map((r,i)=>`
+        <tr class="${r._valid?'row-ok':'row-err'}">
+          <td>${i+1}</td>
+          <td>${r.machine_id||'<span style="color:var(--red)">missing</span>'}</td>
+          <td>${r.type||'&mdash;'}</td>
+          <td>${r.model||'<span style="color:var(--red)">missing</span>'}</td>
+          <td>${r.serial_number||'<span style="color:var(--red)">missing</span>'}</td>
+          <td>${r.manufactured_year||'&mdash;'}</td>
+          <td>${r.install_year||'&mdash;'}</td>
+          <td>${r.software_version||'&mdash;'}</td>
+          <td>${r.status||'ok'}</td>
+        </tr>
+        ${r._errors&&r._errors.length>0?`<tr class="row-err"><td colspan="9"><div class="csv-row-issue">&#9888; ${r._errors.join(' &middot; ')}</div></td></tr>`:''}`
+      ).join('')}</tbody>
+    </table>
+  </div>`:'';
+  const doneHtml=state.csvDone&&state.csvResults?`<div class="success-banner" style="margin-bottom:16px;">
+    <div class="success-icon">&#10003;</div>
+    <div>
+      <div class="success-title">${state.csvResults.inserted} machine${state.csvResults.inserted!==1?'s':''} imported successfully</div>
+      ${state.csvResults.failed>0?`<div class="success-sub">${state.csvResults.failed} rows failed &mdash; check for duplicate serial numbers or machine IDs.</div>`:''}
+      <div style="margin-top:10px;">
+        <button class="btn primary" style="font-size:12px;padding:5px 11px;" onclick="resetCsv()">Upload another file</button>
+        <button class="btn" style="font-size:12px;padding:5px 11px;margin-left:8px;" onclick="goTab('machines')">View machines</button>
+      </div>
+    </div>
+  </div>`:'';
+  return `${doneHtml}
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div>
+        <div style="font-size:16px;font-weight:500;">Bulk upload machines</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px;">Upload a CSV to add multiple machines at once</div>
+      </div>
+      <button class="btn" onclick="downloadTemplate()">Download template CSV</button>
+    </div>
+    <div class="form-card" style="margin-bottom:16px;">
+      <div class="form-section">
+        <div class="form-section-title"><span class="s-num">1</span> Select location</div>
+        <div class="field" style="max-width:340px;">
+          <label>Assign all machines in this file to <span class="req">*</span></label>
+          <select id="csv-loc"><option value="">Select location&hellip;</option>${locOptions}</select>
+          <div class="field-hint">Run separate uploads for each location</div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title"><span class="s-num">2</span> Upload CSV file</div>
+        <div class="csv-drop-zone" id="csv-drop" onclick="document.getElementById('csv-file-input').click()" ondragover="csvDragOver(event)" ondragleave="csvDragLeave(event)" ondrop="csvDrop(event)">
+          <input type="file" id="csv-file-input" accept=".csv,text/csv" onchange="csvFileSelected(event)"/>
+          <div class="csv-drop-label">${hasParsed?'File loaded &mdash; '+rows.length+' rows found':'Drop your CSV file here, or click to browse'}</div>
+          <div class="csv-drop-sub">${hasParsed?'Click to replace file':'Accepts .csv files &middot; Must include headers in row 1'}</div>
+        </div>
+      </div>
+    </div>
+    ${summaryHtml}${tableHtml}
+    ${hasParsed?`<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <button class="btn primary" onclick="importCsv()" ${state.csvUploading||okRows.length===0?'disabled':''}>
+        ${state.csvUploading?'Importing&hellip;':'Import '+okRows.length+' machine'+(okRows.length!==1?'s':'')}
+      </button>
+      <button class="btn-ghost" onclick="resetCsv()">Clear &amp; start over</button>
+      ${errRows.length>0?`<span style="font-size:12px;color:var(--amber-text);">&#9888; ${errRows.length} row${errRows.length!==1?'s':''} with errors will be skipped</span>`:''}
+    </div>`:''}
+    <div style="margin-top:20px;padding:14px 16px;background:var(--bg2);border-radius:var(--radius);font-size:12px;color:var(--text2);">
+      <div style="font-weight:500;margin-bottom:6px;">Required columns:</div>
+      <div style="font-family:monospace;font-size:11px;color:var(--text);">${CSV_REQUIRED.join(', ')}</div>
+      <div style="margin-top:8px;font-weight:500;margin-bottom:6px;">Optional columns:</div>
+      <div style="font-family:monospace;font-size:11px;color:var(--text);">${CSV_COLS.filter(c=>!CSV_REQUIRED.includes(c)).join(', ')}</div>
+      <div style="margin-top:8px;">Valid <code>type</code>: Washer, Dryer, Combo, Other &nbsp;&middot;&nbsp; Valid <code>status</code>: ok, maintenance, error</div>
+    </div>`;
+}
+
+function parseCSV(text){
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2) return[];
+  const headers=lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,'').toLowerCase().replace(/ /g,'_'));
+  const rows=[];
+  for(let i=1;i<lines.length;i++){
+    const vals=lines[i].match(/("(?:[^"]|"")*"|[^,]*)/g)||[];
+    const row={};
+    headers.forEach((h,j)=>{row[h]=(vals[j]||'').trim().replace(/^"|"$/g,'').replace(/""/g,'"');});
+    const errors=[];
+    CSV_REQUIRED.forEach(col=>{if(!row[col]) errors.push(col+' is required');});
+    if(row.type&&!['Washer','Dryer','Combo','Other'].includes(row.type)) errors.push('type must be Washer, Dryer, Combo, or Other');
+    if(row.status&&!['ok','maintenance','error'].includes(row.status)) errors.push('status must be ok, maintenance, or error');
+    if(row.manufactured_year&&isNaN(parseInt(row.manufactured_year))) errors.push('manufactured_year must be a number');
+    if(row.install_year&&isNaN(parseInt(row.install_year))) errors.push('install_year must be a number');
+    row._valid=errors.length===0;
+    row._errors=errors;
+    rows.push(row);
+  }
+  return rows;
+}
+
+function csvDragOver(e){e.preventDefault();document.getElementById('csv-drop').classList.add('drag-over');}
+function csvDragLeave(){document.getElementById('csv-drop').classList.remove('drag-over');}
+function csvDrop(e){e.preventDefault();document.getElementById('csv-drop').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)readCsvFile(f);}
+function csvFileSelected(e){const f=e.target.files[0];if(f)readCsvFile(f);}
+function readCsvFile(file){
+  const reader=new FileReader();
+  reader.onload=ev=>{state.csvRows=parseCSV(ev.target.result);state.csvDone=false;state.csvResults=null;render();};
+  reader.readAsText(file);
+}
+
+async function importCsv(){
+  const locId=(document.getElementById('csv-loc')||{}).value;
+  if(!locId){alert('Please select a location first.');return;}
+  const okRows=state.csvRows.filter(r=>r._valid);
+  if(okRows.length===0) return;
+  state.csvUploading=true;render();
+  const recs=okRows.map(r=>({
+    location_id:locId,machine_id:r.machine_id.toUpperCase(),type:r.type,model:r.model,
+    serial_number:r.serial_number,
+    manufactured_year:r.manufactured_year?parseInt(r.manufactured_year):null,
+    install_year:r.install_year?parseInt(r.install_year):null,
+    software_version:r.software_version||null,status:r.status||'ok',
+    capacity:r.capacity||null,voltage:r.voltage||null,vendor:r.vendor||null,
+    purchase_price:r.purchase_price?parseFloat(r.purchase_price):null,
+    last_service_date:r.last_service_date||null,notes:r.notes||null,
+    flagged:false,issue_count:0,
+  }));
+  let inserted=0,failed=0;
+  for(let i=0;i<recs.length;i+=50){
+    const batch=recs.slice(i,i+50);
+    const{data,error}=await insertMachines(batch);
+    if(error){failed+=batch.length;}else{inserted+=data?.length||batch.length;}
+  }
+  delete state.allMachines[locId];
+  if(locId===state.locId){const ms=await loadMachines(locId);state.allMachines[locId]=ms||[];state.machines=state.allMachines[locId];}
+  state.csvUploading=false;state.csvDone=true;state.csvResults={inserted,failed};render();
+}
+
+function resetCsv(){state.csvRows=[];state.csvDone=false;state.csvResults=null;render();}
+
+function downloadTemplate(){
+  const header=CSV_COLS.join(',')+'\n';
+  const example='A-01,Washer,Speed Queen TR7000WN,SN123456,2020,2021,4.1.0,ok,3.5 cu ft,220V,ABC Supply,1200.00,2025-01-15,No issues\n';
+  const blob=new Blob([header+example],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='machines_template.csv';a.click();URL.revokeObjectURL(url);
 }
 
 // ─── Add Machine ──────────────────────────────────────────────────────────────
@@ -1108,15 +1584,6 @@ async function submitAddMachine() {
     notes: f.notes,
   };
 
-  if(state.usingFallback){
-    // Demo mode — save in memory
-    const newM = {...rec, id:'m-new-'+Date.now(), _lastDays: f.last_service_date ? daysSince(f.last_service_date) : 999, _history:[]};
-    if(!state.allMachines[f.location_id]) state.allMachines[f.location_id]=[];
-    state.allMachines[f.location_id].push(newM);
-    if(f.location_id===state.locId) state.machines=[...state.allMachines[f.location_id]];
-    state.addMachineSuccess=newM; state.addMachineErrors={}; render(); return;
-  }
-
   // Save to Supabase
   const btn = document.querySelector('.form-actions .btn.primary');
   if(btn){btn.disabled=true;btn.textContent='Saving…';}
@@ -1147,6 +1614,8 @@ function closeLogModal() { document.getElementById('log-modal').style.display='n
 function attachLogModalEvents() {
   const modal = document.getElementById('log-modal');
   if(modal){ modal.addEventListener('click',e=>{ if(e.target===modal) closeLogModal(); }); }
+  const locModal = document.getElementById('loc-modal');
+  if(locModal){ locModal.addEventListener('click',e=>{ if(e.target===locModal) closeLocModal(); }); }
 }
 
 async function submitLog() {
@@ -1158,21 +1627,6 @@ async function submitLog() {
   if(!title){ alert('Please enter a summary.'); return; }
 
   const machine = state.machines.find(m=>m.machine_id===machineIdStr);
-
-  if(state.usingFallback){
-    if(machine){
-      if(!machine._history) machine._history=[];
-      machine._history.unshift({id:'h-'+Date.now(), entry_type:type, title, technician:tech||'Unknown', notes, service_date:new Date().toISOString().split('T')[0]});
-      machine.last_service_date=new Date().toISOString().split('T')[0];
-      machine._lastDays=0;
-      if(type!=='routine'){machine.issue_count=(machine.issue_count||0)+1;}
-      if(machine.issue_count>=3) machine.flagged=true;
-      if(type==='routine') machine.status='ok';
-    }
-    closeLogModal();
-    render();
-    return;
-  }
 
   const rec = {
     machine_id: machine?.id||null,
@@ -1193,7 +1647,6 @@ async function submitLog() {
     if(type==='routine') updates.status='ok';
     await updateMachineStatus(machine.id, updates);
     Object.assign(machine, updates);
-    machine._lastDays=0;
   }
 
   state.log = await loadLog(state.locId);
@@ -1206,16 +1659,10 @@ async function toggleFlag(id) {
   const m = getMachine(id);
   if(!m) return;
   const newFlagged = !m.flagged;
-  if(state.usingFallback){
-    m.flagged=newFlagged;
-    m.status=newFlagged?'flagged':(machineLastDays(m)>90?'maintenance':'ok');
-    if(!newFlagged) m.notes='';
-  } else {
-    await updateMachineFlag(id, newFlagged);
-    m.flagged=newFlagged;
-    m.status=newFlagged?'flagged':(machineLastDays(m)>90?'maintenance':'ok');
-    if(!newFlagged) m.notes='';
-  }
+  await updateMachineFlag(id, newFlagged);
+  m.flagged=newFlagged;
+  m.status=newFlagged?'flagged':(machineLastDays(m)>90?'maintenance':'ok');
+  if(!newFlagged) m.notes='';
   render();
 }
 
