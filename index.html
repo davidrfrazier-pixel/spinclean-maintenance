@@ -1194,7 +1194,7 @@ async function deleteLocation() {
 
 
 // --- CSV Bulk Upload ---
-const CSV_COLS=['machine_id','type','model','serial_number','brand','group_name','manufactured_year','install_year','software_version','status','capacity','vendor','purchase_price','last_service_date','notes'];
+const CSV_COLS=['machine_id','type','group_name','brand','model','serial_number','capacity','manufactured_year','install_year','software_version','status','vendor','purchase_price','last_service_date','notes'];
 const CSV_REQUIRED=['machine_id','type','model','serial_number'];
 
 function renderCsvUpload(){
@@ -1346,7 +1346,7 @@ function resetCsv(){state.csvRows=[];state.csvDone=false;state.csvResults=null;r
 
 function downloadTemplate(){
   const header=CSV_COLS.join(',')+'\n';
-  const example='A-01,Washer,Speed Queen TR7000WN,SN123456,2020,2021,4.1.0,ok,3.5 cu ft,220V,ABC Supply,1200.00,2025-01-15,No issues\n';
+  const example='A-01,Washer,Front Washers,Speed Queen,TR7000WN,SN123456,3.5 cu ft,2020,2021,4.1.0,ok,ABC Supply,1200.00,2025-01-15,No issues\n';
   const blob=new Blob([header+example],{type:'text/csv'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download='machines_template.csv';a.click();URL.revokeObjectURL(url);
