@@ -760,7 +760,8 @@ function machineCardHtml(m) {
       </div>
       <span class="status-badge ${badgeCls}">${badgeLbl}</span>
     </div>
-    <div class="machine-meta">${m.model}</div>
+    <div class="machine-meta">${m.brand?m.brand+' · ':''}${m.model}</div>
+    ${m.group_name?`<div class="machine-meta">${m.group_name}</div>`:''}
     <div class="machine-meta">Last service: ${d<999?d+'d ago':'—'} · Age: ${m.install_year?new Date().getFullYear()-m.install_year+'yr':'—'}</div>
   </div>`;
 }
@@ -822,8 +823,9 @@ function renderDetail() {
         <div class="info-row"><div class="info-key">Status</div>
           <div class="info-val"><span class="status-badge ${m.flagged?'s-flag':m.status==='ok'?'s-ok':m.status==='maintenance'?'s-warn':'s-err'}">${m.flagged?'Flagged':m.status==='ok'?'OK':m.status==='maintenance'?'Service due':'Error'}</span></div>
         </div>
+        ${m.brand?`<div class="info-row"><div class="info-key">Brand</div><div class="info-val">${m.brand}</div></div>`:''}
+        ${m.group_name?`<div class="info-row"><div class="info-key">Group</div><div class="info-val">${m.group_name}</div></div>`:''}
         ${m.capacity?`<div class="info-row"><div class="info-key">Capacity</div><div class="info-val">${m.capacity}</div></div>`:''}
-        ${m.voltage?`<div class="info-row"><div class="info-key">Voltage</div><div class="info-val">${m.voltage}</div></div>`:''}
         ${m.vendor?`<div class="info-row"><div class="info-key">Vendor</div><div class="info-val">${m.vendor}</div></div>`:''}
         ${m.purchase_price?`<div class="info-row"><div class="info-key">Purchase price</div><div class="info-val">$${parseFloat(m.purchase_price).toLocaleString()}</div></div>`:''}
       </div>
@@ -1192,7 +1194,7 @@ async function deleteLocation() {
 
 
 // --- CSV Bulk Upload ---
-const CSV_COLS=['machine_id','type','model','serial_number','manufactured_year','install_year','software_version','status','capacity','voltage','vendor','purchase_price','last_service_date','notes'];
+const CSV_COLS=['machine_id','type','model','serial_number','brand','group_name','manufactured_year','install_year','software_version','status','capacity','vendor','purchase_price','last_service_date','notes'];
 const CSV_REQUIRED=['machine_id','type','model','serial_number'];
 
 function renderCsvUpload(){
@@ -1324,7 +1326,7 @@ async function importCsv(){
     manufactured_year:r.manufactured_year?parseInt(r.manufactured_year):null,
     install_year:r.install_year?parseInt(r.install_year):null,
     software_version:r.software_version||null,status:r.status||'ok',
-    capacity:r.capacity||null,voltage:r.voltage||null,vendor:r.vendor||null,
+    brand:r.brand||null,group_name:r.group_name||null,capacity:r.capacity||null,vendor:r.vendor||null,
     purchase_price:r.purchase_price?parseFloat(r.purchase_price):null,
     last_service_date:r.last_service_date||null,notes:r.notes||null,
     flagged:false,issue_count:0,
@@ -1438,12 +1440,20 @@ function renderAddMachine() {
         </div>
         <div class="field-grid c2" style="margin-top:11px;">
           <div class="field">
-            <label>Capacity</label>
-            <input id="am-cap" placeholder="e.g. 3.5 cu ft / 20 lb" />
+            <label>Brand</label>
+            <input id="am-brand" placeholder="e.g. Speed Queen, Maytag" />
+            <div class="field-hint">Manufacturer brand name</div>
           </div>
           <div class="field">
-            <label>Voltage / power</label>
-            <input id="am-volt" placeholder="e.g. 220V / 60Hz" />
+            <label>Group name</label>
+            <input id="am-group" placeholder="e.g. Front Washers, Stack Dryers" />
+            <div class="field-hint">Organise machines into groups</div>
+          </div>
+        </div>
+        <div class="field-grid c2" style="margin-top:11px;">
+          <div class="field">
+            <label>Capacity</label>
+            <input id="am-cap" placeholder="e.g. 3.5 cu ft / 20 lb" />
           </div>
         </div>
       </div>
@@ -1534,11 +1544,12 @@ function getAddFormValues() {
     model: g('am-model'),
     model_custom: g('am-model-custom')||'',
     serial_number: g('am-serial').trim(),
+    brand: g('am-brand').trim()||null,
+    group_name: g('am-group').trim()||null,
     manufactured_year: g('am-mfg')||null,
     install_year: g('am-inst')||null,
     software_version: g('am-sw').trim(),
     capacity: g('am-cap').trim()||null,
-    voltage: g('am-volt').trim()||null,
     warranty_expiry: g('am-warranty')||null,
     last_service_date: g('am-lastservice')||null,
     purchase_price: g('am-price')||null,
@@ -1572,8 +1583,9 @@ async function submitAddMachine() {
     manufactured_year: f.manufactured_year?parseInt(f.manufactured_year):null,
     install_year: f.install_year?parseInt(f.install_year):null,
     software_version: f.software_version,
+    brand: f.brand,
+    group_name: f.group_name,
     capacity: f.capacity,
-    voltage: f.voltage,
     warranty_expiry: f.warranty_expiry||null,
     last_service_date: f.last_service_date||null,
     purchase_price: f.purchase_price?parseFloat(f.purchase_price):null,
