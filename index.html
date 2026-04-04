@@ -1,7 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#185FA5" />
+<link rel="manifest" href="/manifest.json" />
+<title>Spin & Clean — Maintenance Hub</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg2: #f5f5f4; --bg3: #eeede9;
+    --text: #1a1a18; --text2: #6b6b67; --text3: #a0a09c;
+    --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.18);
+    --radius: 8px; --radius-lg: 12px;
+    --blue: #185FA5; --blue-bg: #E6F1FB; --blue-text: #0C447C;
+    --green: #1D9E75; --green-bg: #EAF3DE; --green-text: #3B6D11;
+    --amber: #BA7517; --amber-bg: #FAEEDA; --amber-text: #633806;
+    --red: #A32D2D; --red-bg: #FCEBEB; --red-text: #501313;
+    --red-border: #F09595; --amber-border: #FAC775; --blue-border: #B5D4F4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; color: var(--text); background: var(--bg3); }
+
+  /* Layout */
+  .app { display: flex; flex-direction: column; min-height: 100vh; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 52px; border-bottom: 0.5px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 100; }
+  .topbar-brand { font-size: 15px; font-weight: 600; }
+  .topbar-brand span { color: var(--text2); font-weight: 400; }
+  .topbar-right { font-size: 12px; color: var(--text2); }
+
+  .location-tabs { display: flex; gap: 2px; padding: 10px 16px 0; background: var(--bg); border-bottom: 0.5px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .loc-tab { padding: 7px 14px; font-size: 13px; border: none; background: none; cursor: pointer; color: var(--text2); border-radius: 6px 6px 0 0; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; }
+  .loc-tab.active { color: var(--text); font-weight: 500; border-bottom-color: var(--blue); }
+  .loc-tab:hover:not(.active) { background: var(--bg2); }
+
+  .nav-row { display: flex; align-items: center; gap: 2px; padding: 7px 16px; background: var(--bg2); border-bottom: 0.5px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .nav-tab { padding: 5px 12px; font-size: 12px; border-radius: var(--radius); border: none; background: none; cursor: pointer; color: var(--text2); white-space: nowrap; transition: all 0.15s; }
+  .nav-tab.active { background: var(--bg); color: var(--text); font-weight: 500; border: 0.5px solid var(--border2); }
+  .nav-tab:hover:not(.active) { background: var(--bg); color: var(--text); }
+  .nav-spacer { flex: 1; }
+  .todo-btn { padding: 5px 12px; font-size: 12px; font-weight: 500; border-radius: var(--radius); border: none; cursor: pointer; white-space: nowrap; background: var(--red); color: #fff; transition: background 0.15s; }
+  .todo-btn:hover { background: #791F1F; }
+  .todo-btn.active { background: #791F1F; outline: 2px solid #E24B4A; outline-offset: 1px; }
+
+  .content { padding: 16px; flex: 1; max-width: 900px; margin: 0 auto; width: 100%; }
+
+  /* Loading */
+  .loading { display: flex; align-items: center; justify-content: center; padding: 60px 20px; color: var(--text2); font-size: 13px; gap: 10px; }
+  .spinner { width: 18px; height: 18px; border: 2px solid var(--border2); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-banner { background: var(--red-bg); border: 0.5px solid var(--red-border); border-radius: var(--radius); padding: 12px 14px; font-size: 13px; color: var(--red); margin-bottom: 14px; }
+
+  /* Cards & Grids */
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin-bottom: 18px; }
+  .metric-card { background: var(--bg2); border-radius: var(--radius); padding: 11px 13px; cursor: pointer; border: 1.5px solid transparent; transition: all 0.15s; }
+  .metric-card:hover { background: var(--bg); border-color: var(--border2); }
+  .metric-card.active-filter { border-color: var(--blue); background: var(--blue-bg); }
+  .metric-label { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+  .metric-card.active-filter .metric-label { color: var(--blue-text); }
+  .metric-value { font-size: 22px; font-weight: 500; }
+  .metric-value.ok { color: var(--green); }
+  .metric-value.warn { color: var(--amber); }
+  .metric-value.danger { color: var(--red); }
+  .metric-hint { font-size: 10px; color: var(--text3); margin-top: 2px; }
+  .metric-card.active-filter .metric-hint { color: var(--blue); }
+
+  .section-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text2); margin-bottom: 8px; }
+
+  .alert-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+  .alert-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: var(--radius); border: 0.5px solid; cursor: pointer; transition: filter 0.15s; }
+  .alert-item:hover { filter: brightness(0.96); }
+  .alert-item.warn { background: var(--amber-bg); border-color: var(--amber-border); color: var(--amber-text); }
+  .alert-item.danger { background: var(--red-bg); border-color: var(--red-border); color: var(--red-text); }
+  .alert-item.info { background: var(--blue-bg); border-color: var(--blue-border); color: var(--blue-text); }
+  .alert-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+  .alert-item.warn .alert-dot { background: var(--amber); }
+  .alert-item.danger .alert-dot { background: var(--red); }
+  .alert-item.info .alert-dot { background: var(--blue); }
+  .alert-body { flex: 1; }
+  .alert-text { font-size: 13px; line-height: 1.4; }
+  .alert-sub { font-size: 11px; margin-top: 2px; opacity: 0.75; }
+  .alert-arrow { font-size: 12px; opacity: 0.45; align-self: center; }
+
+  .machine-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+  .machine-card { border: 0.5px solid var(--border); border-radius: var(--radius); padding: 10px 12px; cursor: pointer; background: var(--bg); transition: all 0.15s; }
+  .machine-card:hover { border-color: var(--border2); background: var(--bg2); }
+  .machine-card.flagged { border-color: var(--red-border); background: var(--red-bg); }
+  .machine-card.warn-border { border-color: var(--amber-border); }
+  .machine-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+  .machine-id { font-size: 13px; font-weight: 500; }
+  .machine-type { font-size: 11px; color: var(--text2); }
+  .machine-meta { font-size: 11px; color: var(--text2); margin-top: 3px; }
+
+  .status-badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 500; white-space: nowrap; }
+  .s-ok { background: var(--green-bg); color: var(--green-text); }
+  .s-warn { background: var(--amber-bg); color: var(--amber-text); }
+  .s-err { background: var(--red-bg); color: var(--red); }
+  .s-flag { background: var(--red-bg); color: var(--red); }
+
+  /* Detail */
+  .detail-panel { border: 0.5px solid var(--border); border-radius: var(--radius-lg); background: var(--bg); padding: 16px; }
+  .detail-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .detail-title { font-size: 16px; font-weight: 500; }
+  .btn-row { display: flex; gap: 7px; flex-wrap: wrap; }
+  .btn { padding: 6px 12px; font-size: 12px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: transparent; cursor: pointer; color: var(--text); transition: all 0.15s; font-weight: 500; }
+  .btn:hover { background: var(--bg2); }
+  .btn.primary { background: var(--blue); color: #E6F1FB; border-color: var(--blue); }
+  .btn.primary:hover { background: var(--blue-text); }
+  .btn.flag-btn { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber-border); }
+  .btn.unflag-btn { background: var(--red-bg); color: var(--red); border-color: var(--red-border); }
+
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 14px; }
+  .info-row { padding: 8px 10px; background: var(--bg2); border-radius: var(--radius); }
+  .info-key { font-size: 11px; color: var(--text2); margin-bottom: 2px; }
+  .info-val { font-size: 13px; font-weight: 500; }
+
+  .history-list { display: flex; flex-direction: column; }
+  .history-item { display: flex; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--border); }
+  .history-item:last-child { border-bottom: none; }
+  .h-dot-col { display: flex; flex-direction: column; align-items: center; padding-top: 2px; }
+  .h-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .h-dot.routine { background: var(--green); }
+  .h-dot.repair { background: var(--amber); }
+  .h-dot.issue { background: var(--red); }
+  .h-line { width: 1px; flex: 1; background: var(--border); margin-top: 3px; }
+  .h-body { flex: 1; }
+  .h-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .h-sub { font-size: 11px; color: var(--text2); display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* Forms */
+  .form-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .form-section { padding: 16px 18px; border-bottom: 0.5px solid var(--border); }
+  .form-section:last-of-type { border-bottom: none; }
+  .form-section-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text2); margin-bottom: 13px; display: flex; align-items: center; gap: 8px; }
+  .s-num { width: 20px; height: 20px; border-radius: 50%; background: var(--blue); color: #fff; font-size: 11px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  .field-grid { display: grid; gap: 11px; }
+  .field-grid.c2 { grid-template-columns: 1fr 1fr; }
+  .field-grid.c3 { grid-template-columns: 1fr 1fr 1fr; }
+  @media(max-width:520px) { .field-grid.c2, .field-grid.c3 { grid-template-columns: 1fr; } }
+
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text2); font-weight: 500; }
+  .field label .req { color: var(--red); margin-left: 2px; }
+  .field input, .field select, .field textarea {
+    padding: 8px 10px; font-size: 13px; border-radius: var(--radius);
+    border: 0.5px solid var(--border2); background: var(--bg);
+    color: var(--text); width: 100%; transition: border-color 0.15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 2px rgba(24,95,165,0.1); }
+  .field input.err, .field select.err { border-color: var(--red); }
+  .field textarea { min-height: 70px; resize: vertical; }
+  .field-hint { font-size: 11px; color: var(--text3); }
+  .field-err { font-size: 11px; color: var(--red); }
+
+  .radio-group { display: flex; gap: 7px; flex-wrap: wrap; }
+  .radio-opt { position: relative; }
+  .radio-opt input[type=radio] { position: absolute; opacity: 0; width: 0; height: 0; }
+  .radio-lbl { display: flex; align-items: center; gap: 6px; padding: 7px 12px; border: 0.5px solid var(--border2); border-radius: var(--radius); cursor: pointer; font-size: 13px; transition: all 0.15s; background: var(--bg); color: var(--text); }
+  .radio-opt input[type=radio]:checked + .radio-lbl { border-color: var(--blue); background: var(--blue-bg); color: var(--blue-text); font-weight: 500; }
+  .r-dot { width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid var(--border2); flex-shrink: 0; }
+  .radio-opt input[type=radio]:checked + .radio-lbl .r-dot { border-color: var(--blue); background: var(--blue); }
+
+  .status-chips { display: flex; gap: 7px; flex-wrap: wrap; }
+  .status-chip { padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1.5px solid transparent; transition: all 0.15s; }
+  .status-chip.ok { background: var(--green-bg); color: var(--green-text); border-color: #C0DD97; }
+  .status-chip.maintenance { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber-border); }
+  .status-chip.error { background: var(--red-bg); color: var(--red); border-color: var(--red-border); }
+  .status-chip.selected { outline: 2px solid currentColor; outline-offset: 2px; }
+
+  .form-actions { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-top: 0.5px solid var(--border); background: var(--bg2); flex-wrap: wrap; gap: 8px; }
+  .btn-ghost { background: none; border: none; cursor: pointer; color: var(--text2); font-size: 12px; padding: 6px 0; }
+  .btn-ghost:hover { color: var(--text); }
+
+  .success-banner { background: var(--green-bg); border: 0.5px solid #C0DD97; border-radius: var(--radius-lg); padding: 18px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 12px; }
+  .success-icon { width: 26px; height: 26px; border-radius: 50%; background: var(--green); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .success-title { font-size: 14px; font-weight: 500; color: #085041; margin-bottom: 2px; }
+  .success-sub { font-size: 12px; color: var(--green-text); }
+
+  /* Todo */
+  .todo-progress-bar { height: 5px; background: var(--bg2); border-radius: 4px; margin-bottom: 16px; overflow: hidden; }
+  .todo-fill { height: 100%; background: var(--green); border-radius: 4px; transition: width 0.3s; }
+  .todo-section { margin-bottom: 18px; }
+  .todo-item { display: flex; align-items: flex-start; gap: 11px; padding: 10px 13px; border: 0.5px solid var(--border); border-radius: var(--radius); background: var(--bg); margin-bottom: 6px; transition: opacity 0.2s; }
+  .todo-item.done { opacity: 0.4; }
+  .todo-item.done .todo-task { text-decoration: line-through; color: var(--text2); }
+  .todo-check { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--border2); flex-shrink: 0; margin-top: 1px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: var(--bg); transition: all 0.15s; }
+  .todo-check.checked { background: var(--green); border-color: var(--green); }
+  .todo-check.checked::after { content: ''; display: block; width: 5px; height: 9px; border: 2px solid #fff; border-top: none; border-left: none; transform: rotate(45deg) translate(-1px,-1px); }
+  .todo-check.urgent { border-color: var(--red); }
+  .todo-body { flex: 1; min-width: 0; }
+  .todo-task { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .todo-meta { font-size: 11px; color: var(--text2); display: flex; gap: 7px; flex-wrap: wrap; }
+  .todo-machine-link { font-size: 11px; color: var(--blue); cursor: pointer; background: none; border: none; padding: 0; text-decoration: underline; }
+  .todo-pri { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 500; flex-shrink: 0; margin-top: 1px; }
+  .pri-critical { background: var(--red-bg); color: var(--red); }
+  .pri-high { background: var(--amber-bg); color: var(--amber-text); }
+  .pri-routine { background: var(--blue-bg); color: var(--blue-text); }
+  .all-done-banner { text-align: center; padding: 22px; background: var(--green-bg); border-radius: var(--radius-lg); border: 0.5px solid #C0DD97; margin-bottom: 14px; }
+  .all-done-banner .ad-icon { font-size: 20px; margin-bottom: 5px; }
+  .all-done-banner .ad-text { font-size: 13px; color: var(--green-text); font-weight: 500; }
+
+  /* Log modal */
+  .modal-wrap { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .modal { background: var(--bg); border-radius: var(--radius-lg); border: 0.5px solid var(--border); padding: 20px; width: 100%; max-width: 440px; }
+  .modal-title { font-size: 15px; font-weight: 500; margin-bottom: 14px; }
+
+  /* Registry */
+  .registry-list { display: flex; flex-direction: column; gap: 7px; }
+  .registry-row { display: flex; align-items: center; gap: 11px; padding: 11px 13px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: border-color 0.15s; }
+  .registry-row:hover { border-color: var(--border2); }
+  .reg-icon { width: 34px; height: 34px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .reg-icon.washer { background: var(--blue-bg); color: var(--blue-text); }
+  .reg-icon.dryer { background: var(--amber-bg); color: var(--amber-text); }
+  .reg-icon.other { background: var(--bg2); color: var(--text2); }
+  .reg-info { flex: 1; min-width: 0; }
+  .reg-id { font-size: 13px; font-weight: 500; }
+  .reg-sub { font-size: 11px; color: var(--text2); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .back-btn { background: none; border: none; cursor: pointer; color: var(--text2); font-size: 13px; padding: 0 0 14px 0; display: flex; align-items: center; gap: 4px; }
+  .back-btn:hover { color: var(--text); }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text2); font-size: 13px; }
+  .empty-dashed { border: 0.5px dashed var(--border2); border-radius: var(--radius-lg); padding: 32px 20px; text-align: center; color: var(--text2); font-size: 13px; }
+
+  .filter-row { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 13px; }
+  .filter-btn { padding: 5px 12px; font-size: 12px; border-radius: 20px; border: 0.5px solid var(--border2); background: transparent; cursor: pointer; color: var(--text2); transition: all 0.15s; }
+  .filter-btn.active { background: var(--bg2); color: var(--text); border-color: var(--border2); font-weight: 500; }
+
+  .quick-filter-bar { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 8px; }
+  .clear-btn { font-size: 12px; color: var(--blue); background: none; border: none; cursor: pointer; }
+
+  .dot-mini { display: inline-flex; gap: 4px; flex-wrap: wrap; margin-top: 10px; }
+  .dot-m { width: 40px; height: 26px; border-radius: 5px; font-size: 9px; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; border: 0.5px solid transparent; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="topbar">
+    <div class="topbar-brand">Spin &amp; Clean <span>Maintenance</span></div>
+    <div class="topbar-right" id="alert-count"></div>
+  </div>
+  <div class="location-tabs" id="loc-tabs"></div>
+  <div class="nav-row" id="nav-row"></div>
+  <div class="content" id="content">
+    <div class="loading"><div class="spinner"></div> Loading…</div>
+  </div>
+</div>
+
+<!-- Log Modal -->
+<div class="modal-wrap" id="log-modal" style="display:none;">
+  <div class="modal">
+    <div class="modal-title" id="log-modal-title">Log maintenance</div>
+    <div class="field" style="margin-bottom:11px;">
+      <label>Machine ID</label>
+      <input id="lm-machine" placeholder="e.g. A-01" />
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:11px;">
+      <div class="field">
+        <label>Type</label>
+        <select id="lm-type">
+          <option value="routine">Routine maintenance</option>
+          <option value="repair">Repair</option>
+          <option value="issue">Issue reported</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Technician</label>
+        <input id="lm-tech" placeholder="Name" />
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:11px;">
+      <label>Summary <span style="color:var(--red)">*</span></label>
+      <input id="lm-title" placeholder="Brief description" />
+    </div>
+    <div class="field" style="margin-bottom:14px;">
+      <label>Notes</label>
+      <textarea id="lm-notes" placeholder="Details, parts used, follow-up…"></textarea>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;">
+      <button class="btn" onclick="closeLogModal()">Cancel</button>
+      <button class="btn primary" onclick="submitLog()">Save entry</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  const SUPABASE_URL = 'https://xsiscsvgitqvymzltvuu.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhzaXNjc3ZnaXRxdnltemx0dnV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMzY4NDYsImV4cCI6MjA5MDgxMjg0Nn0.DIPfrM-0gOPqEb22yxeLSSmJZBfmPtymsNbteWzrTMs';           
-  const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-</script>
+// ─── Supabase ────────────────────────────────────────────────────────────────
+const SUPA_URL = 'https://xsiscsvgitqvymzltvuu.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhzaXNjc3ZnaXRxdnltemx0dnV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMzY4NDYsImV4cCI6MjA5MDgxMjg0Nn0.DIPfrM-0gOPqEb22yxeLSSmJZBfmPtymsNbteWzrTMs';
+const db = supabase.createClient(SUPA_URL, SUPA_KEY);
 
+// ─── State ───────────────────────────────────────────────────────────────────
+let state = {
+  tab: 'dashboard',
+  locId: null,
+  locations: [],
+  machines: [],       // machines for current location
+  allMachines: {},    // { locId: [...] }
+  log: [],            // maintenance log for current location
+  todoChecked: {},    // { locId: { taskKey: true } }
+  selectedMachineId: null,
+  machineFilter: 'all',
+  dashFilter: null,
+  addMachineType: 'Washer',
+  addMachineStatus: 'ok',
+  addMachineErrors: {},
+  addMachineSuccess: null,
+  loading: true,
+  dbError: null,
+  usingFallback: false,
+};
+
+// ─── Fallback data (shown if DB not yet set up) ───────────────────────────────
+function makeFallbackLocations() {
+  return [
+    {id:'loc1', name:'Main St',   address:'112 N Main St'},
+    {id:'loc2', name:'Oak Ave',   address:'450 Oak Ave'},
+    {id:'loc3', name:'Riverside', address:'87 Riverside Blvd'},
+    {id:'loc4', name:'Eastside',  address:'321 E Commerce'},
+  ];
+}
+function randFrom(a){return a[Math.floor(Math.random()*a.length)];}
+function randInt(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function makeFallbackMachines(locId, locIdx) {
+  const wModels=['Speed Queen TR7000WN','Maytag MHN33PDCWW','UniMac UF35PVQS','Alliance FS0130CNVSP'];
+  const dModels=['Speed Queen DR7000WG','Maytag MDG25PNCWW','UniMac UT050PVQS','Alliance FT020ECVSP'];
+  const swVers=['3.1.2','3.2.0','3.3.1','4.0.0','4.1.0'];
+  const issues=['Vibration noise','Door latch issue','Error code E5','Drum won\'t spin','Coin acceptor jam','Water not draining','Won\'t heat','Control board fault'];
+  const ms=[];
+  for(let i=0;i<40;i++){
+    const type=i<20?'Washer':'Dryer';
+    const model=randFrom(type==='Washer'?wModels:dModels);
+    const mfgYear=randInt(2014,2021);
+    const installYear=mfgYear+randInt(0,1);
+    const lmDays=randInt(0,180);
+    const issueCount=Math.random()<0.2?randInt(2,5):(Math.random()<0.3?1:0);
+    const flagged=issueCount>=3;
+    const hasErr=Math.random()<0.07;
+    const status=flagged?'flagged':hasErr?'error':lmDays>90?'maintenance':'ok';
+    const hist=[];
+    let db=0;
+    for(let h=0;h<randInt(3,7);h++){
+      db+=randInt(10,60);
+      const d=new Date(2026,3,1);d.setDate(d.getDate()-db);
+      const isIss=Math.random()<0.3;
+      hist.push({
+        id:`h-${locIdx}-${i}-${h}`,
+        entry_type:isIss?(Math.random()<0.5?'issue':'repair'):'routine',
+        title:isIss?randFrom(issues):(Math.random()<0.5?'Routine maintenance':'Belt & filter check'),
+        technician:randFrom(['Mike R.','Sarah T.','Dave H.','Priya K.']),
+        notes:isIss?'Documented and addressed.':'All systems nominal.',
+        service_date:d.toISOString().split('T')[0],
+      });
+    }
+    ms.push({
+      id:`m-${locIdx}-${i}`,
+      location_id:locId,
+      machine_id:`${String.fromCharCode(65+locIdx)}-${String(i+1).padStart(2,'0')}`,
+      type,model,
+      software_version:randFrom(swVers),
+      manufactured_year:mfgYear,
+      install_year:installYear,
+      serial_number:`SN${randInt(100000,999999)}`,
+      status,flagged,
+      issue_count:issueCount,
+      notes:flagged?'Recurring issues — review service contract.':'',
+      last_service_date:new Date(new Date(2026,3,1).getTime()-lmDays*86400000).toISOString().split('T')[0],
+      _lastDays:lmDays,
+      _history:hist,
+    });
+  }
+  return ms;
+}
+
+// ─── DB helpers ──────────────────────────────────────────────────────────────
+async function loadLocations() {
+  const {data,error} = await db.from('locations').select('*').order('name');
+  if(error) return null;
+  return data;
+}
+async function loadMachines(locId) {
+  const {data,error} = await db.from('machines').select('*').eq('location_id',locId).order('machine_id');
+  if(error) return null;
+  return data;
+}
+async function loadLog(locId) {
+  const {data,error} = await db
+    .from('maintenance_log')
+    .select('*, machines(machine_id)')
+    .eq('location_id',locId)
+    .order('service_date',{ascending:false})
+    .limit(60);
+  if(error) return [];
+  return data||[];
+}
+async function insertMachine(rec) {
+  const {data,error} = await db.from('machines').insert([rec]).select().single();
+  return {data,error};
+}
+async function insertLog(rec) {
+  const {data,error} = await db.from('maintenance_log').insert([rec]).select().single();
+  return {data,error};
+}
+async function updateMachineFlag(id, flagged) {
+  const {error} = await db.from('machines').update({flagged, status: flagged ? 'flagged' : 'ok', updated_at: new Date().toISOString()}).eq('id',id);
+  return error;
+}
+async function updateMachineStatus(id, updates) {
+  const {error} = await db.from('machines').update({...updates, updated_at: new Date().toISOString()}).eq('id',id);
+  return error;
+}
+
+// ─── Bootstrap ───────────────────────────────────────────────────────────────
+async function init() {
+  state.loading = true;
+  render();
+
+  const locs = await loadLocations();
+  if (!locs) {
+    // DB not set up yet — use fallback demo data
+    state.usingFallback = true;
+    state.locations = makeFallbackLocations();
+    state.locId = state.locations[0].id;
+    state.locations.forEach((l,i) => {
+      state.allMachines[l.id] = makeFallbackMachines(l.id, i);
+    });
+    state.machines = state.allMachines[state.locId];
+    state.log = [];
+  } else {
+    state.locations = locs;
+    state.locId = locs.length ? locs[0].id : null;
+    if (state.locId) await switchLocation(state.locId, false);
+  }
+
+  state.loading = false;
+  render();
+}
+
+async function switchLocation(locId, doRender=true) {
+  state.locId = locId;
+  state.selectedMachineId = null;
+  state.dashFilter = null;
+
+  if (state.usingFallback) {
+    state.machines = state.allMachines[locId] || [];
+    state.log = [];
+  } else {
+    if (!state.allMachines[locId]) {
+      const ms = await loadMachines(locId);
+      state.allMachines[locId] = ms || [];
+    }
+    state.machines = state.allMachines[locId];
+    state.log = await loadLog(locId);
+  }
+
+  if (doRender) render();
+}
+
+// ─── Derived helpers ─────────────────────────────────────────────────────────
+function getMachine(id) { return state.machines.find(m=>m.id===id); }
+
+function daysSince(dateStr) {
+  if (!dateStr) return 999;
+  const d = new Date(dateStr);
+  const now = new Date(2026,3,1);
+  return Math.floor((now - d) / 86400000);
+}
+
+function machineLastDays(m) {
+  if (m._lastDays !== undefined) return m._lastDays;
+  return daysSince(m.last_service_date);
+}
+
+function getAlerts(machines) {
+  const a=[];
+  machines.forEach(m=>{
+    const d = machineLastDays(m);
+    if(m.flagged) a.push({type:'danger', text:`Machine ${m.machine_id} flagged: ${m.issue_count||0} recurring issues`, sub:m.model, mid:m.id});
+    else if(m.status==='error') a.push({type:'danger', text:`Machine ${m.machine_id} reporting an error`, sub:m.model, mid:m.id});
+    else if(d>120) a.push({type:'warn', text:`Machine ${m.machine_id} overdue for maintenance (${d}d)`, sub:m.model, mid:m.id});
+    else if(d>90) a.push({type:'info', text:`Machine ${m.machine_id} approaching service interval (${d}d)`, sub:m.model, mid:m.id});
+  });
+  return a.slice(0,8);
+}
+
+function buildTodos(machines) {
+  const items=[];
+  machines.forEach(m=>{
+    const d = machineLastDays(m);
+    if(m.flagged) items.push({key:`flag-${m.id}`, mid:m.id, priority:'critical', task:'Flagged machine — inspect & assess', detail:`${m.issue_count||0} recurring issues on record`, meta:m.type+' · '+m.model});
+    if(m.status==='error'&&!m.flagged) items.push({key:`err-${m.id}`, mid:m.id, priority:'critical', task:'Error reported — diagnose & repair', detail:'Machine reporting active error', meta:m.type+' · '+m.model});
+    if(d>120&&!m.flagged&&m.status!=='error') items.push({key:`over-${m.id}`, mid:m.id, priority:'high', task:'Overdue maintenance', detail:`${d} days since last service`, meta:m.type+' · '+m.model});
+    else if(d>90&&!m.flagged&&m.status!=='error') items.push({key:`due-${m.id}`, mid:m.id, priority:'high', task:'Routine maintenance due', detail:`${d} days since last service`, meta:m.type+' · '+m.model});
+    const age = m.install_year ? 2026 - m.install_year : 0;
+    if(age>=8&&d>60&&!m.flagged) items.push({key:`age-${m.id}`, mid:m.id, priority:'routine', task:'Aged machine check', detail:`Machine is ${age} years old`, meta:m.type+' · '+m.model});
+  });
+  const seen=new Set();
+  return items.filter(it=>{
+    const k=it.mid+it.priority;
+    if(seen.has(k)) return false;
+    seen.add(k);return true;
+  }).sort((a,b)=>({critical:0,high:1,routine:2}[a.priority]-{critical:0,high:1,routine:2}[b.priority]));
+}
+
+function totalAlerts() {
+  let n=0;
+  state.locations.forEach(l=>{
+    const ms = state.allMachines[l.id]||[];
+    n+=getAlerts(ms).filter(a=>a.type!=='info').length;
+  });
+  return n;
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function render() {
+  const app = document.getElementById('app');
+  const count = totalAlerts();
+  document.getElementById('alert-count').textContent = count > 0 ? `${count} alert${count!==1?'s':''}` : '';
+  renderLocTabs();
+  renderNavRow();
+  renderContent();
+}
+
+function renderLocTabs() {
+  document.getElementById('loc-tabs').innerHTML = state.locations.map(l=>
+    `<button class="loc-tab ${l.id===state.locId?'active':''}" onclick="goLoc('${l.id}')">${l.name}</button>`
+  ).join('');
+}
+
+function renderNavRow() {
+  const tabs=[
+    {id:'dashboard',label:'Dashboard'},
+    {id:'machines',label:'Machines'},
+    {id:'maintenance',label:'Log'},
+    {id:'alerts',label:'Alerts'},
+    {id:'add',label:'+ Add Machine'},
+  ];
+  document.getElementById('nav-row').innerHTML =
+    tabs.map(t=>`<button class="nav-tab ${state.tab===t.id?'active':''}" onclick="goTab('${t.id}')">${t.label}</button>`).join('') +
+    `<div class="nav-spacer"></div>` +
+    `<button class="todo-btn ${state.tab==='todo'?'active':''}" onclick="goTab('todo')">Today's Tasks</button>`;
+}
+
+function renderContent() {
+  const el = document.getElementById('content');
+  if(state.loading){ el.innerHTML=`<div class="loading"><div class="spinner"></div> Loading…</div>`; return; }
+
+  if(state.usingFallback && state.tab !== 'add'){
+    el.innerHTML = `<div class="error-banner" style="margin-bottom:14px;">
+      <strong>Demo mode:</strong> Supabase tables not found. Run the SQL schema in your Supabase SQL Editor to enable live data. Data shown below is sample data.
+    </div>` + getTabHtml();
+  } else {
+    el.innerHTML = getTabHtml();
+  }
+  attachLogModalEvents();
+}
+
+function getTabHtml() {
+  if(state.selectedMachineId) return renderDetail();
+  switch(state.tab){
+    case 'todo':        return renderTodo();
+    case 'dashboard':   return renderDashboard();
+    case 'machines':    return renderMachines();
+    case 'maintenance': return renderLog();
+    case 'alerts':      return renderAlerts();
+    case 'add':         return renderAddMachine();
+  }
+  return '';
+}
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+function renderDashboard() {
+  const ms = state.machines;
+  const loc = state.locations.find(l=>l.id===state.locId);
+  const ok = ms.filter(m=>m.status==='ok').length;
+  const warn = ms.filter(m=>m.status==='maintenance').length;
+  const err = ms.filter(m=>m.status==='error').length;
+  const flagged = ms.filter(m=>m.flagged).length;
+  const overdue = ms.filter(m=>machineLastDays(m)>90).length;
+  const qf = state.dashFilter;
+
+  const metrics=[
+    {key:'all',    label:'Total',      value:ms.length, cls:''},
+    {key:'ok',     label:'Operational',value:ok,        cls:'ok'},
+    {key:'maintenance',label:'Needs service',value:warn,cls:'warn'},
+    {key:'error',  label:'Errors',     value:err,       cls:'danger'},
+    {key:'flagged',label:'Flagged',    value:flagged,   cls:'danger'},
+    {key:'overdue',label:'Overdue 90d+',value:overdue,  cls:overdue>0?'warn':'ok'},
+  ];
+
+  let filtered = ms;
+  if(qf==='ok') filtered=ms.filter(m=>m.status==='ok');
+  else if(qf==='maintenance') filtered=ms.filter(m=>m.status==='maintenance');
+  else if(qf==='error') filtered=ms.filter(m=>m.status==='error');
+  else if(qf==='flagged') filtered=ms.filter(m=>m.flagged);
+  else if(qf==='overdue') filtered=ms.filter(m=>machineLastDays(m)>90);
+
+  const alerts = getAlerts(ms);
+
+  const quickView = qf ? `
+    <div class="quick-filter-bar">
+      <div class="section-title" style="margin-bottom:0;">${metrics.find(m=>m.key===qf)?.label} — ${filtered.length} machine${filtered.length!==1?'s':''}</div>
+      <button class="clear-btn" onclick="setDashFilter(null)">Clear ×</button>
+    </div>
+    <div class="machine-grid">
+      ${filtered.length===0?'<div class="empty-state" style="grid-column:1/-1">No machines in this category.</div>':
+        filtered.map(m=>machineCardHtml(m)).join('')}
+    </div>` :
+  `<div class="section-title">Recent alerts</div>
+    <div class="alert-list">
+      ${alerts.length===0?'<div class="empty-state">No active alerts.</div>':
+        alerts.map(a=>alertHtml(a)).join('')}
+    </div>
+    <div class="section-title" style="margin-top:4px;">Status overview</div>
+    <div class="dot-mini">
+      ${ms.slice(0,20).map(m=>{
+        const col=m.flagged?'#FCEBEB':m.status==='error'?'#FCEBEB':m.status==='maintenance'?'#FAEEDA':'#EAF3DE';
+        const tc=m.flagged||m.status==='error'?'#A32D2D':m.status==='maintenance'?'#633806':'#3B6D11';
+        const bc=m.flagged||m.status==='error'?'#F09595':m.status==='maintenance'?'#FAC775':'#C0DD97';
+        return `<div class="dot-m" style="background:${col};color:${tc};border-color:${bc}" onclick="selectMachine('${m.id}')" title="${m.machine_id}">${m.machine_id}</div>`;
+      }).join('')}
+      ${ms.length>20?`<div class="dot-m" style="background:var(--bg2);color:var(--text2);border-color:var(--border)" onclick="goTab('machines')">+${ms.length-20}</div>`:''}
+    </div>`;
+
+  return `
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">${loc?.address||''}</div>
+    <div class="metric-grid">
+      ${metrics.map(m=>`
+        <div class="metric-card ${qf===m.key?'active-filter':''}" onclick="setDashFilter('${m.key}')">
+          <div class="metric-label">${m.label}</div>
+          <div class="metric-value ${m.cls}">${m.value}</div>
+          <div class="metric-hint">${qf===m.key?'Showing ↓':'Click to filter'}</div>
+        </div>`).join('')}
+    </div>
+    ${quickView}`;
+}
+
+function alertHtml(a) {
+  return `<div class="alert-item ${a.type}" onclick="selectMachine('${a.mid}')">
+    <div class="alert-dot"></div>
+    <div class="alert-body">
+      <div class="alert-text">${a.text}</div>
+      <div class="alert-sub">${a.sub} — tap to view</div>
+    </div>
+    <div class="alert-arrow">→</div>
+  </div>`;
+}
+
+function machineCardHtml(m) {
+  const cls = m.flagged?'flagged':m.status==='maintenance'?'warn-border':'';
+  const badgeCls = m.flagged?'s-flag':m.status==='ok'?'s-ok':m.status==='maintenance'?'s-warn':'s-err';
+  const badgeLbl = m.flagged?'Flagged':m.status==='ok'?'OK':m.status==='maintenance'?'Service due':'Error';
+  const d = machineLastDays(m);
+  return `<div class="machine-card ${cls}" onclick="selectMachine('${m.id}')">
+    <div class="machine-header">
+      <div>
+        <div class="machine-id">${m.machine_id}${m.flagged?' ⚑':''}</div>
+        <div class="machine-type">${m.type}</div>
+      </div>
+      <span class="status-badge ${badgeCls}">${badgeLbl}</span>
+    </div>
+    <div class="machine-meta">${m.model}</div>
+    <div class="machine-meta">Last service: ${d<999?d+'d ago':'—'} · Age: ${m.install_year?2026-m.install_year+'yr':'—'}</div>
+  </div>`;
+}
+
+// ─── Machines tab ─────────────────────────────────────────────────────────────
+function renderMachines() {
+  const f = state.machineFilter;
+  let filtered = state.machines;
+  if(f==='flagged') filtered=state.machines.filter(m=>m.flagged);
+  else if(f==='error') filtered=state.machines.filter(m=>m.status==='error');
+  else if(f==='maintenance') filtered=state.machines.filter(m=>m.status==='maintenance');
+  else if(f==='washer') filtered=state.machines.filter(m=>m.type==='Washer');
+  else if(f==='dryer') filtered=state.machines.filter(m=>m.type==='Dryer');
+
+  return `
+    <div class="filter-row">
+      ${['all','flagged','error','maintenance','washer','dryer'].map(v=>
+        `<button class="filter-btn ${f===v?'active':''}" onclick="setMachineFilter('${v}')">${v==='all'?'All':v==='maintenance'?'Needs service':v.charAt(0).toUpperCase()+v.slice(1)}</button>`
+      ).join('')}
+    </div>
+    <div class="machine-grid">
+      ${filtered.length===0?'<div class="empty-state">No machines match this filter.</div>':
+        filtered.map(m=>machineCardHtml(m)).join('')}
+    </div>`;
+}
+
+// ─── Machine detail ───────────────────────────────────────────────────────────
+function renderDetail() {
+  const m = getMachine(state.selectedMachineId);
+  if(!m) return '<div class="empty-state">Machine not found.</div>';
+  const d = machineLastDays(m);
+  const age = m.install_year ? 2026 - m.install_year : null;
+  const hist = state.usingFallback ? (m._history||[]) : (state.log.filter(l=>{
+    const lid = l.machine_id || (l.machines && l.machines.id);
+    return lid === m.id;
+  }));
+
+  return `
+    <button class="back-btn" onclick="clearMachine()">← Back</button>
+    <div class="detail-panel">
+      <div class="detail-header">
+        <div>
+          <div class="detail-title">${m.machine_id} — ${m.type}${m.flagged?' ⚑':''}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px;">${m.model}</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn ${m.flagged?'unflag-btn':'flag-btn'}" onclick="toggleFlag('${m.id}')">${m.flagged?'Remove flag':'⚑ Flag'}</button>
+          <button class="btn primary" onclick="openLogModal('${m.machine_id}')">+ Log service</button>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-row"><div class="info-key">Model</div><div class="info-val">${m.model}</div></div>
+        <div class="info-row"><div class="info-key">Serial number</div><div class="info-val">${m.serial_number||'—'}</div></div>
+        <div class="info-row"><div class="info-key">Manufactured year</div><div class="info-val">${m.manufactured_year||'—'}</div></div>
+        <div class="info-row"><div class="info-key">Install year</div><div class="info-val">${m.install_year||'—'}${age?' ('+age+' yrs)':''}</div></div>
+        <div class="info-row"><div class="info-key">Software version</div><div class="info-val">${m.software_version||'—'}</div></div>
+        <div class="info-row"><div class="info-key">Last maintenance</div><div class="info-val">${d<999?d+'d ago':'—'}</div></div>
+        <div class="info-row"><div class="info-key">Issues logged</div>
+          <div class="info-val" style="color:${(m.issue_count||0)>=3?'var(--red)':(m.issue_count||0)>0?'var(--amber)':'var(--green)'}">${m.issue_count||0}</div>
+        </div>
+        <div class="info-row"><div class="info-key">Status</div>
+          <div class="info-val"><span class="status-badge ${m.flagged?'s-flag':m.status==='ok'?'s-ok':m.status==='maintenance'?'s-warn':'s-err'}">${m.flagged?'Flagged':m.status==='ok'?'OK':m.status==='maintenance'?'Service due':'Error'}</span></div>
+        </div>
+        ${m.capacity?`<div class="info-row"><div class="info-key">Capacity</div><div class="info-val">${m.capacity}</div></div>`:''}
+        ${m.voltage?`<div class="info-row"><div class="info-key">Voltage</div><div class="info-val">${m.voltage}</div></div>`:''}
+        ${m.vendor?`<div class="info-row"><div class="info-key">Vendor</div><div class="info-val">${m.vendor}</div></div>`:''}
+        ${m.purchase_price?`<div class="info-row"><div class="info-key">Purchase price</div><div class="info-val">$${parseFloat(m.purchase_price).toLocaleString()}</div></div>`:''}
+      </div>
+
+      ${m.notes?`<div style="padding:10px;background:var(--red-bg);border-radius:var(--radius);font-size:12px;color:var(--red);margin-bottom:14px;">${m.notes}</div>`:''}
+
+      <div class="section-title" style="margin-bottom:8px;">Maintenance history</div>
+      <div class="history-list">
+        ${hist.length===0?'<div class="empty-state" style="padding:20px 0">No history logged yet.</div>':
+          hist.map((h,i,arr)=>`
+            <div class="history-item">
+              <div class="h-dot-col">
+                <div class="h-dot ${h.entry_type||h.type}"></div>
+                ${i<arr.length-1?'<div class="h-line"></div>':''}
+              </div>
+              <div class="h-body">
+                <div class="h-title">${h.title}</div>
+                <div class="h-sub">
+                  <span>${h.service_date||h.date||''}</span>
+                  <span>Tech: ${h.technician||h.tech||'—'}</span>
+                  <span style="color:${(h.entry_type||h.type)==='routine'?'var(--green)':(h.entry_type||h.type)==='repair'?'var(--amber)':'var(--red)'};">${h.entry_type||h.type||''}</span>
+                </div>
+                ${h.notes?`<div style="font-size:12px;color:var(--text2);margin-top:2px;">${h.notes}</div>`:''}
+              </div>
+            </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ─── Maintenance Log ──────────────────────────────────────────────────────────
+function renderLog() {
+  const entries = state.usingFallback
+    ? state.machines.flatMap(m=>(m._history||[]).map(h=>({...h, _machineId: m.machine_id, _machineType: m.type})))
+        .sort((a,b)=>new Date(b.service_date||b.date)-new Date(a.service_date||a.date)).slice(0,30)
+    : state.log.slice(0,30);
+
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
+      <div style="font-size:13px;color:var(--text2);">${entries.length} recent entries</div>
+      <button class="btn primary" onclick="openLogModal('')">+ Log maintenance</button>
+    </div>
+    <div class="history-list">
+      ${entries.length===0?'<div class="empty-state">No log entries yet.</div>':
+        entries.map((h,i,arr)=>{
+          const mid = h._machineId || (h.machines && h.machines.machine_id) || '';
+          const etype = h.entry_type || h.type || 'routine';
+          return `<div class="history-item">
+            <div class="h-dot-col">
+              <div class="h-dot ${etype}"></div>
+              ${i<arr.length-1?'<div class="h-line"></div>':''}
+            </div>
+            <div class="h-body">
+              <div class="h-title">${h.title}</div>
+              <div class="h-sub">
+                <span>${mid} — ${h._machineType||''}</span>
+                <span>${h.service_date||h.date||''}</span>
+                <span>Tech: ${h.technician||h.tech||'—'}</span>
+                <span style="color:${etype==='routine'?'var(--green)':etype==='repair'?'var(--amber)':'var(--red)'};">${etype}</span>
+              </div>
+              ${h.notes?`<div style="font-size:12px;color:var(--text2);margin-top:2px;">${h.notes}</div>`:''}
+            </div>
+          </div>`;}).join('')}
+    </div>`;
+}
+
+// ─── Alerts ───────────────────────────────────────────────────────────────────
+function renderAlerts() {
+  const alerts = getAlerts(state.machines);
+  const flagged = state.machines.filter(m=>m.flagged);
+  return `
+    <div class="section-title">Active alerts (${alerts.length})</div>
+    <div class="alert-list" style="margin-bottom:20px;">
+      ${alerts.length===0?'<div class="empty-state">All clear — no alerts.</div>':alerts.map(a=>alertHtml(a)).join('')}
+    </div>
+    <div class="section-title">Flagged machines (${flagged.length})</div>
+    ${flagged.length===0?'<div class="empty-state">No flagged machines.</div>':
+      flagged.map(m=>`<div class="machine-card flagged" onclick="selectMachine('${m.id}')" style="margin-bottom:7px;">
+        <div class="machine-header">
+          <div><div class="machine-id">${m.machine_id} ⚑</div><div class="machine-meta">${m.model} · ${m.issue_count||0} issues</div></div>
+          <span class="status-badge s-flag">Flagged</span>
+        </div>
+        ${m.notes?`<div style="font-size:12px;color:var(--red);margin-top:4px;">${m.notes}</div>`:''}
+      </div>`).join('')}`;
+}
+
+// ─── Today's Tasks ────────────────────────────────────────────────────────────
+function renderTodo() {
+  const todos = buildTodos(state.machines);
+  const loc = state.locations.find(l=>l.id===state.locId);
+  const checked = state.todoChecked[state.locId] || {};
+  const done = todos.filter(t=>checked[t.key]).length;
+  const total = todos.length;
+  const pct = total===0?100:Math.round(done/total*100);
+  const allDone = total>0 && done===total;
+
+  const critical = todos.filter(t=>t.priority==='critical');
+  const high = todos.filter(t=>t.priority==='high');
+  const routine = todos.filter(t=>t.priority==='routine');
+
+  function todoItemHtml(t) {
+    const isDone = !!checked[t.key];
+    const priCls = t.priority==='critical'?'pri-critical':t.priority==='high'?'pri-high':'pri-routine';
+    const priLbl = t.priority==='critical'?'Critical':t.priority==='high'?'High':'Routine';
+    const chkCls = isDone?'checked':t.priority==='critical'?'urgent':'';
+    return `<div class="todo-item ${isDone?'done':''}">
+      <div class="todo-check ${chkCls}" onclick="toggleTodo('${t.key}')"></div>
+      <div class="todo-body">
+        <div class="todo-task">${t.task}</div>
+        <div class="todo-meta">
+          <button class="todo-machine-link" onclick="selectMachine('${t.mid}')">${state.machines.find(m=>m.id===t.mid)?.machine_id||t.mid}</button>
+          <span>${t.meta}</span><span>${t.detail}</span>
+        </div>
+      </div>
+      <span class="todo-pri ${priCls}">${priLbl}</span>
+    </div>`;
+  }
+
+  return `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+      <div style="font-size:15px;font-weight:500;">${loc?.name} — Daily tasks</div>
+      <div style="font-size:12px;color:var(--text2);">Apr 1, 2026</div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div style="font-size:11px;color:var(--text2);">${done} of ${total} completed</div>
+      <div style="font-size:12px;font-weight:500;color:${pct===100?'var(--green)':'var(--text2)'};">${pct}%</div>
+    </div>
+    <div class="todo-progress-bar"><div class="todo-fill" style="width:${pct}%"></div></div>
+
+    ${allDone?`<div class="all-done-banner"><div class="ad-icon">✓</div><div class="ad-text">All tasks complete — great work today!</div></div>`:''}
+    ${total===0?`<div class="empty-dashed">No service tasks needed today.<br>All machines are on schedule.</div>`:''}
+
+    ${critical.length>0?`<div class="todo-section">
+      <div class="section-title">Immediate attention <span style="background:var(--red-bg);color:var(--red);font-size:10px;padding:1px 7px;border-radius:10px;">${critical.length}</span></div>
+      ${critical.map(t=>todoItemHtml(t)).join('')}
+    </div>`:''}
+    ${high.length>0?`<div class="todo-section">
+      <div class="section-title">Service due <span style="background:var(--amber-bg);color:var(--amber-text);font-size:10px;padding:1px 7px;border-radius:10px;">${high.length}</span></div>
+      ${high.map(t=>todoItemHtml(t)).join('')}
+    </div>`:''}
+    ${routine.length>0?`<div class="todo-section">
+      <div class="section-title">Routine checks <span style="background:var(--blue-bg);color:var(--blue-text);font-size:10px;padding:1px 7px;border-radius:10px;">${routine.length}</span></div>
+      ${routine.map(t=>todoItemHtml(t)).join('')}
+    </div>`:''}`;
+}
+
+// ─── Add Machine ──────────────────────────────────────────────────────────────
+const washerModels=['Speed Queen TR7000WN','Speed Queen TR5000WN','Maytag MHN33PDCWW','Maytag MHN30PREWW','UniMac UF35PVQS','UniMac UF50PVQS','Alliance FS0130CNVSP','Huebsch HUCNASP','Other'];
+const dryerModels=['Speed Queen DR7000WG','Speed Queen DR5000WG','Maytag MDG25PNCWW','Maytag MDG18PDAWW','UniMac UT050PVQS','UniMac UT075PVQS','Alliance FT020ECVSP','Huebsch HDENASP','Other'];
+const currentYear=2026;
+const years=Array.from({length:currentYear-1999},(_, i)=>currentYear-i);
+
+function renderAddMachine() {
+  const errs = state.addMachineErrors;
+  const succ = state.addMachineSuccess;
+  const models = state.addMachineType==='Washer'?washerModels:dryerModels;
+
+  const successHtml = succ ? `
+    <div class="success-banner">
+      <div class="success-icon">✓</div>
+      <div>
+        <div class="success-title">Machine added — ${succ.machine_id}</div>
+        <div class="success-sub">${succ.model} · ${state.locations.find(l=>l.id===succ.location_id)?.name||''}</div>
+        <div style="margin-top:10px;display:flex;gap:8px;">
+          <button class="btn primary" style="font-size:12px;padding:5px 11px;" onclick="resetAddForm()">Add another</button>
+          <button class="btn" style="font-size:12px;padding:5px 11px;" onclick="goTab('machines')">View machines</button>
+        </div>
+      </div>
+    </div>` : '';
+
+  const errBanner = Object.keys(errs).length>0 ? `<div class="error-banner" style="margin-bottom:14px;">Please fix the errors below before saving.</div>` : '';
+
+  const showCustomModel = (document.getElementById('am-model')?.value || '') === 'Other';
+  const locOptions = state.locations.map(l=>`<option value="${l.id}">${l.name} — ${l.address||''}</option>`).join('');
+  const modelOptions = models.map(m=>`<option value="${m}">${m}</option>`).join('');
+  const yearOptions = years.map(y=>`<option value="${y}">${y}</option>`).join('');
+
+  function e(key,cls='') { return errs[key]?`<div class="field-err">${errs[key]}</div>`:''; }
+  function ec(key) { return errs[key]?' err':''; }
+
+  return `
+    ${successHtml}${errBanner}
+    <div class="form-card">
+
+      <div class="form-section">
+        <div class="form-section-title"><span class="s-num">1</span> Location & ID</div>
+        <div class="field-grid c2">
+          <div class="field">
+            <label>Location <span class="req">*</span></label>
+            <select id="am-loc" class="${ec('location')}"><option value="">Select location…</option>${locOptions}</select>
+            ${e('location')}
+          </div>
+          <div class="field">
+            <label>Machine ID <span class="req">*</span></label>
+            <input id="am-mid" class="${ec('machine_id')}" placeholder="e.g. A-01" />
+            ${e('machine_id')}
+            <div class="field-hint">Use a consistent format (e.g. A-01 through A-40)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title"><span class="s-num">2</span> Type & model</div>
+        <div class="field" style="margin-bottom:11px;">
+          <label>Type <span class="req">*</span></label>
+          <div class="radio-group">
+            ${['Washer','Dryer','Combo','Other'].map(t=>`
+              <div class="radio-opt">
+                <input type="radio" name="am-type" id="am-type-${t}" ${state.addMachineType===t?'checked':''} onchange="setAddType('${t}')" />
+                <label class="radio-lbl" for="am-type-${t}"><span class="r-dot"></span>${t}</label>
+              </div>`).join('')}
+          </div>
+        </div>
+        <div class="field-grid ${showCustomModel?'c3':'c2'}">
+          <div class="field">
+            <label>Model <span class="req">*</span></label>
+            <select id="am-model" class="${ec('model')}" onchange="rerenderAdd()">
+              <option value="">Select model…</option>${modelOptions}
+            </select>
+            ${e('model')}
+          </div>
+          ${showCustomModel?`<div class="field">
+            <label>Model name <span class="req">*</span></label>
+            <input id="am-model-custom" class="${ec('model_custom')}" placeholder="Full model name" />
+            ${e('model_custom')}
+          </div>`:''}
+          <div class="field">
+            <label>Serial number <span class="req">*</span></label>
+            <input id="am-serial" class="${ec('serial_number')}" placeholder="e.g. SN123456" />
+            ${e('serial_number')}
+          </div>
+        </div>
+        <div class="field-grid c2" style="margin-top:11px;">
+          <div class="field">
+            <label>Capacity</label>
+            <input id="am-cap" placeholder="e.g. 3.5 cu ft / 20 lb" />
+          </div>
+          <div class="field">
+            <label>Voltage / power</label>
+            <input id="am-volt" placeholder="e.g. 220V / 60Hz" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title"><span class="s-num">3</span> Dates & software</div>
+        <div class="field-grid c3">
+          <div class="field">
+            <label>Manufactured year <span class="req">*</span></label>
+            <select id="am-mfg" class="${ec('manufactured_year')}">
+              <option value="">Year…</option>${yearOptions}
+            </select>
+            ${e('manufactured_year')}
+          </div>
+          <div class="field">
+            <label>Install year <span class="req">*</span></label>
+            <select id="am-inst" class="${ec('install_year')}">
+              <option value="">Year…</option>${yearOptions}
+            </select>
+            ${e('install_year')}
+          </div>
+          <div class="field">
+            <label>Software version <span class="req">*</span></label>
+            <input id="am-sw" class="${ec('software_version')}" placeholder="e.g. 4.1.0" />
+            ${e('software_version')}
+            <div class="field-hint">Found in machine settings</div>
+          </div>
+        </div>
+        <div class="field-grid c2" style="margin-top:11px;">
+          <div class="field">
+            <label>Warranty expiry</label>
+            <input type="date" id="am-warranty" />
+          </div>
+          <div class="field">
+            <label>Last maintenance date</label>
+            <input type="date" id="am-lastservice" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title"><span class="s-num">4</span> Purchase & vendor</div>
+        <div class="field-grid c2">
+          <div class="field">
+            <label>Purchase price</label>
+            <input id="am-price" placeholder="e.g. 1200.00" />
+          </div>
+          <div class="field">
+            <label>Vendor / supplier</label>
+            <input id="am-vendor" placeholder="e.g. ABC Laundry Supply" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title"><span class="s-num">5</span> Status & notes</div>
+        <div class="field" style="margin-bottom:12px;">
+          <label>Current status</label>
+          <div class="status-chips">
+            ${['ok','maintenance','error'].map(s=>`
+              <div class="status-chip ${s} ${state.addMachineStatus===s?'selected':''}" onclick="setAddStatus('${s}')">
+                ${s==='ok'?'Operational':s==='maintenance'?'Needs service':'Error / down'}
+              </div>`).join('')}
+          </div>
+        </div>
+        <div class="field">
+          <label>Notes</label>
+          <textarea id="am-notes" placeholder="Known issues, special instructions…"></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-ghost" onclick="resetAddForm()">Clear form</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span style="font-size:11px;color:var(--text3);"><span style="color:var(--red)">*</span> Required</span>
+          <button class="btn primary" onclick="submitAddMachine()">Save machine</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function getAddFormValues() {
+  const g=id=>(document.getElementById(id)||{}).value||'';
+  return {
+    location_id: g('am-loc'),
+    machine_id: g('am-mid').trim().toUpperCase(),
+    type: state.addMachineType,
+    model: g('am-model'),
+    model_custom: g('am-model-custom')||'',
+    serial_number: g('am-serial').trim(),
+    manufactured_year: g('am-mfg')||null,
+    install_year: g('am-inst')||null,
+    software_version: g('am-sw').trim(),
+    capacity: g('am-cap').trim()||null,
+    voltage: g('am-volt').trim()||null,
+    warranty_expiry: g('am-warranty')||null,
+    last_service_date: g('am-lastservice')||null,
+    purchase_price: g('am-price')||null,
+    vendor: g('am-vendor').trim()||null,
+    status: state.addMachineStatus,
+    notes: g('am-notes').trim()||null,
+  };
+}
+
+async function submitAddMachine() {
+  const f = getAddFormValues();
+  const errs = {};
+  if(!f.location_id) errs.location='Select a location';
+  if(!f.machine_id) errs.machine_id='Machine ID is required';
+  if(!f.model) errs.model='Select a model';
+  if(f.model==='Other'&&!f.model_custom) errs.model_custom='Enter the model name';
+  if(!f.serial_number) errs.serial_number='Serial number is required';
+  if(!f.manufactured_year) errs.manufactured_year='Select year';
+  if(!f.install_year) errs.install_year='Select year';
+  if(f.manufactured_year&&f.install_year&&parseInt(f.install_year)<parseInt(f.manufactured_year)) errs.install_year='Cannot be before manufactured year';
+  if(!f.software_version) errs.software_version='Enter version';
+
+  if(Object.keys(errs).length>0){ state.addMachineErrors=errs; render(); return; }
+
+  const rec = {
+    location_id: f.location_id,
+    machine_id: f.machine_id,
+    type: f.type,
+    model: f.model==='Other'?f.model_custom:f.model,
+    serial_number: f.serial_number,
+    manufactured_year: f.manufactured_year?parseInt(f.manufactured_year):null,
+    install_year: f.install_year?parseInt(f.install_year):null,
+    software_version: f.software_version,
+    capacity: f.capacity,
+    voltage: f.voltage,
+    warranty_expiry: f.warranty_expiry||null,
+    last_service_date: f.last_service_date||null,
+    purchase_price: f.purchase_price?parseFloat(f.purchase_price):null,
+    vendor: f.vendor,
+    status: f.status,
+    flagged: false,
+    issue_count: 0,
+    notes: f.notes,
+  };
+
+  if(state.usingFallback){
+    // Demo mode — save in memory
+    const newM = {...rec, id:'m-new-'+Date.now(), _lastDays: f.last_service_date ? daysSince(f.last_service_date) : 999, _history:[]};
+    if(!state.allMachines[f.location_id]) state.allMachines[f.location_id]=[];
+    state.allMachines[f.location_id].push(newM);
+    if(f.location_id===state.locId) state.machines=[...state.allMachines[f.location_id]];
+    state.addMachineSuccess=newM; state.addMachineErrors={}; render(); return;
+  }
+
+  // Save to Supabase
+  const btn = document.querySelector('.form-actions .btn.primary');
+  if(btn){btn.disabled=true;btn.textContent='Saving…';}
+  const {data,error} = await insertMachine(rec);
+  if(error){
+    state.addMachineErrors={_server:'Database error: '+error.message};
+    render(); return;
+  }
+  // Refresh machines list for this location
+  delete state.allMachines[f.location_id];
+  if(f.location_id===state.locId){
+    const ms = await loadMachines(f.location_id);
+    state.allMachines[f.location_id]=ms||[];
+    state.machines=state.allMachines[f.location_id];
+  }
+  state.addMachineSuccess=data;
+  state.addMachineErrors={};
+  render();
+}
+
+// ─── Log modal ────────────────────────────────────────────────────────────────
+function openLogModal(machineIdStr) {
+  document.getElementById('lm-machine').value = machineIdStr||'';
+  document.getElementById('log-modal-title').textContent = machineIdStr ? `Log service — ${machineIdStr}` : 'Log maintenance';
+  document.getElementById('log-modal').style.display='flex';
+}
+function closeLogModal() { document.getElementById('log-modal').style.display='none'; }
+function attachLogModalEvents() {
+  const modal = document.getElementById('log-modal');
+  if(modal){ modal.addEventListener('click',e=>{ if(e.target===modal) closeLogModal(); }); }
+}
+
+async function submitLog() {
+  const machineIdStr = document.getElementById('lm-machine').value.trim().toUpperCase();
+  const type = document.getElementById('lm-type').value;
+  const tech = document.getElementById('lm-tech').value.trim();
+  const title = document.getElementById('lm-title').value.trim();
+  const notes = document.getElementById('lm-notes').value.trim();
+  if(!title){ alert('Please enter a summary.'); return; }
+
+  const machine = state.machines.find(m=>m.machine_id===machineIdStr);
+
+  if(state.usingFallback){
+    if(machine){
+      if(!machine._history) machine._history=[];
+      machine._history.unshift({id:'h-'+Date.now(), entry_type:type, title, technician:tech||'Unknown', notes, service_date:new Date().toISOString().split('T')[0]});
+      machine.last_service_date=new Date().toISOString().split('T')[0];
+      machine._lastDays=0;
+      if(type!=='routine'){machine.issue_count=(machine.issue_count||0)+1;}
+      if(machine.issue_count>=3) machine.flagged=true;
+      if(type==='routine') machine.status='ok';
+    }
+    closeLogModal();
+    render();
+    return;
+  }
+
+  const rec = {
+    machine_id: machine?.id||null,
+    location_id: state.locId,
+    entry_type: type,
+    title,
+    notes: notes||null,
+    technician: tech||null,
+    service_date: new Date().toISOString().split('T')[0],
+  };
+  const {error} = await insertLog(rec);
+  if(error){ alert('Error saving log: '+error.message); return; }
+
+  if(machine){
+    const updates = {last_service_date: rec.service_date};
+    if(type!=='routine') updates.issue_count=(machine.issue_count||0)+1;
+    if(updates.issue_count>=3) updates.flagged=true;
+    if(type==='routine') updates.status='ok';
+    await updateMachineStatus(machine.id, updates);
+    Object.assign(machine, updates);
+    machine._lastDays=0;
+  }
+
+  state.log = await loadLog(state.locId);
+  closeLogModal();
+  render();
+}
+
+// ─── Actions ──────────────────────────────────────────────────────────────────
+async function toggleFlag(id) {
+  const m = getMachine(id);
+  if(!m) return;
+  const newFlagged = !m.flagged;
+  if(state.usingFallback){
+    m.flagged=newFlagged;
+    m.status=newFlagged?'flagged':(machineLastDays(m)>90?'maintenance':'ok');
+    if(!newFlagged) m.notes='';
+  } else {
+    await updateMachineFlag(id, newFlagged);
+    m.flagged=newFlagged;
+    m.status=newFlagged?'flagged':(machineLastDays(m)>90?'maintenance':'ok');
+    if(!newFlagged) m.notes='';
+  }
+  render();
+}
+
+function toggleTodo(key) {
+  if(!state.todoChecked[state.locId]) state.todoChecked[state.locId]={};
+  state.todoChecked[state.locId][key] = !state.todoChecked[state.locId][key];
+  render();
+}
+
+function setAddType(t) { state.addMachineType=t; render(); }
+function setAddStatus(s) { state.addMachineStatus=s; render(); }
+function rerenderAdd() { render(); }
+function resetAddForm() { state.addMachineSuccess=null; state.addMachineErrors={}; state.addMachineType='Washer'; state.addMachineStatus='ok'; render(); }
+
+async function goLoc(id) {
+  state.tab = state.tab==='add'?state.tab:state.tab;
+  state.selectedMachineId=null;
+  await switchLocation(id);
+}
+function goTab(t) { state.tab=t; state.selectedMachineId=null; state.dashFilter=null; render(); }
+function selectMachine(id) { state.selectedMachineId=id; render(); }
+function clearMachine() { state.selectedMachineId=null; render(); }
+function setDashFilter(k) { state.dashFilter=state.dashFilter===k?null:k; render(); }
+function setMachineFilter(f) { state.machineFilter=f; render(); }
+
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
