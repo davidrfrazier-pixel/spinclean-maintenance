@@ -1321,11 +1321,11 @@ async function importCsv(){
   if(okRows.length===0) return;
   state.csvUploading=true;render();
   const recs=okRows.map(r=>({
-    location_id:locId,machine_id:r.machine_id.toUpperCase(),type:r.type,model:r.model,
-    serial_number:r.serial_number,
+    location_id:locId,machine_id:r.machine_id.toUpperCase(),type:r.type?r.type.charAt(0).toUpperCase()+r.type.slice(1).toLowerCase():'Washer',model:r.model,
+    serial_number:r.serial_number||null,
     manufactured_year:r.manufactured_year?parseInt(r.manufactured_year):null,
     install_year:r.install_year?parseInt(r.install_year):null,
-    software_version:r.software_version||null,status:r.status||'ok',
+    software_version:r.software_version||null,status:['ok','maintenance','error'].includes(r.status)?r.status:'ok',
     brand:r.brand||null,group_name:r.group_name||null,capacity:r.capacity||null,vendor:r.vendor||null,
     purchase_price:r.purchase_price?parseFloat(r.purchase_price):null,
     last_service_date:r.last_service_date||null,notes:r.notes||null,
@@ -1566,7 +1566,7 @@ async function submitAddMachine() {
   if(!f.machine_id) errs.machine_id='Machine ID is required';
   if(!f.model) errs.model='Select a model';
   if(f.model==='Other'&&!f.model_custom) errs.model_custom='Enter the model name';
-  if(!f.serial_number) errs.serial_number='Serial number is required';
+  // serial_number is optional
   if(!f.manufactured_year) errs.manufactured_year='Select year';
   if(!f.install_year) errs.install_year='Select year';
   if(f.manufactured_year&&f.install_year&&parseInt(f.install_year)<parseInt(f.manufactured_year)) errs.install_year='Cannot be before manufactured year';
@@ -1579,7 +1579,7 @@ async function submitAddMachine() {
     machine_id: f.machine_id,
     type: f.type,
     model: f.model==='Other'?f.model_custom:f.model,
-    serial_number: f.serial_number,
+    serial_number: f.serial_number||null,
     manufactured_year: f.manufactured_year?parseInt(f.manufactured_year):null,
     install_year: f.install_year?parseInt(f.install_year):null,
     software_version: f.software_version,
