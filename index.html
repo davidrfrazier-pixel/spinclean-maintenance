@@ -1282,15 +1282,33 @@ function renderCsvUpload(){
     </div>`;
 }
 
+function parseCSVLine(line){
+  const result=[];
+  let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(inQ){
+      if(ch==='"'&&line[i+1]==='"'){cur+='"';i++;}
+      else if(ch==='"'){inQ=false;}
+      else{cur+=ch;}
+    } else {
+      if(ch==='"'){inQ=true;}
+      else if(ch===','){result.push(cur.trim());cur='';}
+      else{cur+=ch;}
+    }
+  }
+  result.push(cur.trim());
+  return result;
+}
 function parseCSV(text){
   const lines=text.split(/\r?\n/).filter(l=>l.trim());
   if(lines.length<2) return[];
-  const headers=lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,'').toLowerCase().replace(/ /g,'_'));
+  const headers=parseCSVLine(lines[0]).map(h=>h.replace(/^"|"$/g,'').toLowerCase().replace(/ /g,'_'));
   const rows=[];
   for(let i=1;i<lines.length;i++){
-    const vals=lines[i].match(/("(?:[^"]|"")*"|[^,]*)/g)||[];
+    const vals=parseCSVLine(lines[i]);
     const row={};
-    headers.forEach((h,j)=>{row[h]=(vals[j]||'').trim().replace(/^"|"$/g,'').replace(/""/g,'"');});
+    headers.forEach((h,j)=>{row[h]=(vals[j]||'').replace(/^"|"$/g,'').trim();});
     const errors=[];
     CSV_REQUIRED.forEach(col=>{if(!row[col]) errors.push(col+' is required');});
     if(row.type&&!['Washer','Dryer','Combo','Other'].includes(row.type)) errors.push('type must be Washer, Dryer, Combo, or Other');
