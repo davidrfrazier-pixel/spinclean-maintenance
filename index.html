@@ -1195,7 +1195,7 @@ async function deleteLocation() {
 
 // --- CSV Bulk Upload ---
 const CSV_COLS=['machine_id','type','group_name','brand','model','serial_number','capacity','manufactured_year','install_year','software_version','status','vendor','purchase_price','last_service_date','notes'];
-const CSV_REQUIRED=['machine_id','type','model','serial_number'];
+const CSV_REQUIRED=['machine_id','type','group_name','brand','model','capacity'];
 
 function renderCsvUpload(){
   const locs=state.locations;
