@@ -1228,17 +1228,20 @@ function renderCsvUpload(){
       ).join('')}</tbody>
     </table>
   </div>`:'';
-  const doneHtml=state.csvDone&&state.csvResults?`<div class="success-banner" style="margin-bottom:16px;">
-    <div class="success-icon">&#10003;</div>
-    <div>
-      <div class="success-title">${state.csvResults.inserted} machine${state.csvResults.inserted!==1?'s':''} imported successfully</div>
-      ${state.csvResults.failed>0?`<div class="success-sub">${state.csvResults.failed} rows failed &mdash; check for duplicate serial numbers or machine IDs.</div>`:''}
-      <div style="margin-top:10px;">
-        <button class="btn primary" style="font-size:12px;padding:5px 11px;" onclick="resetCsv()">Upload another file</button>
-        <button class="btn" style="font-size:12px;padding:5px 11px;margin-left:8px;" onclick="goTab('machines')">View machines</button>
+  if(state.csvDone&&state.csvResults){
+    const r=state.csvResults;
+    return `<div style="text-align:center;padding:48px 20px;max-width:420px;margin:0 auto;">
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--green-bg);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;color:var(--green);">&#10003;</div>
+      <div style="font-size:22px;font-weight:500;margin-bottom:8px;">Success!</div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:4px;">${r.inserted} machine${r.inserted!==1?'s':''} imported successfully.</div>
+      ${r.failed>0?`<div style="font-size:13px;color:var(--amber);margin-bottom:4px;">${r.failed} row${r.failed!==1?'s':''} failed &mdash; check for duplicate machine IDs.</div>`:''}
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:24px;">
+        <button class="btn primary" onclick="resetCsv()">Upload another file</button>
+        <button class="btn" onclick="goTab('machines')">View machines</button>
       </div>
-    </div>
-  </div>`:'';
+    </div>`;
+  }
+  const doneHtml='';
   return `${doneHtml}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
       <div>
