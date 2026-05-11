@@ -1901,7 +1901,6 @@ function renderDashboard() {
       ${ms.length>20?`<div class="dot-m" style="background:var(--bg2);color:var(--text2);border-color:var(--border)" onclick="goTab('machines')">+${ms.length-20}</div>`:''}
     </div>`;
 
-  const greet = (() => { const h = new Date().getHours(); return h<12?'Good morning':h<17?'Good afternoon':'Good evening'; })();
   return `
     <div class="page-header" style="margin-bottom:16px;">
       <div class="page-title">${greet}, ${state.user?.name?.split(' ')[0] || ''}!</div>
