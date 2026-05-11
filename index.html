@@ -7,42 +7,48 @@
 <link rel="manifest" href="/manifest.json" />
 <title>Spin & Clean — Maintenance Hub</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
   :root {
-    --bg: #ffffff; --bg2: #f5f5f4; --bg3: #eeede9;
-    --text: #1a1a18; --text2: #6b6b67; --text3: #a0a09c;
-    --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.18);
-    --radius: 8px; --radius-lg: 12px;
-    --blue: #185FA5; --blue-bg: #E6F1FB; --blue-text: #0C447C;
-    --green: #1D9E75; --green-bg: #EAF3DE; --green-text: #3B6D11;
-    --amber: #BA7517; --amber-bg: #FAEEDA; --amber-text: #633806;
-    --red: #A32D2D; --red-bg: #FCEBEB; --red-text: #501313;
-    --red-border: #F09595; --amber-border: #FAC775; --blue-border: #B5D4F4;
-  }
+  --bg:#ffffff;--bg2:#F4F6FA;--bg3:#EBEef5;
+  --text:#1a1a1a;--text2:#5a6478;--text3:#9aa0ae;
+  --border:rgba(27,45,91,0.1);--border2:rgba(27,45,91,0.2);
+  --radius:10px;--radius-lg:14px;
+  --navy:#1B2D5B;--navy-dark:#0F1E3E;--navy-light:#2A4080;
+  --blue:#2563EB;--blue-bg:#EEF4FF;--blue-text:#1D4ED8;
+  --green:#059669;--green-bg:#ECFDF5;--green-text:#065F46;
+  --amber:#D97706;--amber-bg:#FFFBEB;--amber-text:#92400E;
+  --red:#DC2626;--red-bg:#FEF2F2;--red-text:#7F1D1D;
+  --red-border:#FECACA;--amber-border:#FDE68A;--blue-border:#BFDBFE;
+  --shadow:0 1px 3px rgba(27,45,91,0.08),0 1px 2px rgba(27,45,91,0.06);
+  --shadow-md:0 4px 6px rgba(27,45,91,0.07),0 2px 4px rgba(27,45,91,0.06);
+}
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; color: var(--text); background: var(--bg3); }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; color: var(--text); background: var(--bg3); }
 
   /* Layout */
   .app { display: flex; flex-direction: column; min-height: 100vh; }
-  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 52px; border-bottom: 0.5px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 100; }
-  .topbar-brand { font-size: 15px; font-weight: 600; }
-  .topbar-brand span { color: var(--text2); font-weight: 400; }
-  .topbar-right { font-size: 12px; color: var(--text2); }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 20px; height: 58px; background: var(--navy); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  .topbar-brand { display: flex; flex-direction: column; line-height: 1; }
+  .topbar-brand-main { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.3px; font-style: italic; }
+  .topbar-brand-sub { font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.6); letter-spacing: 0.15em; text-transform: uppercase; margin-top: 2px; }
+  .topbar-right { font-size: 12px; color: rgba(255,255,255,0.75); }
+  .topbar-alert-badge { background: var(--red); color: #fff; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
 
-  .location-tabs { display: flex; gap: 2px; padding: 10px 16px 0; background: var(--bg); border-bottom: 0.5px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .loc-tab { padding: 7px 14px; font-size: 13px; border: none; background: none; cursor: pointer; color: var(--text2); border-radius: 6px 6px 0 0; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; }
-  .loc-tab.active { color: var(--text); font-weight: 500; border-bottom-color: var(--blue); }
-  .loc-tab:hover:not(.active) { background: var(--bg2); }
+  .location-tabs { display: flex; gap: 0; padding: 0 16px; background: var(--navy-dark); overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .loc-tab { padding: 10px 16px; font-size: 12px; font-weight: 500; border: none; background: none; cursor: pointer; color: rgba(255,255,255,0.55); border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; }
+  .loc-tab.active { color: #fff; border-bottom-color: #60A5FA; font-weight: 600; }
+  .loc-tab:hover:not(.active) { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.06); }
 
-  .nav-row { display: flex; align-items: center; gap: 2px; padding: 7px 16px; background: var(--bg2); border-bottom: 0.5px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .nav-tab { padding: 5px 12px; font-size: 12px; border-radius: var(--radius); border: none; background: none; cursor: pointer; color: var(--text2); white-space: nowrap; transition: all 0.15s; }
-  .nav-tab.active { background: var(--bg); color: var(--text); font-weight: 500; border: 0.5px solid var(--border2); }
-  .nav-tab:hover:not(.active) { background: var(--bg); color: var(--text); }
+  .nav-row { display: flex; align-items: center; gap: 2px; padding: 6px 16px; background: #fff; border-bottom: 1px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; box-shadow: 0 1px 3px rgba(27,45,91,0.06); }
+  .nav-tab { padding: 5px 12px; font-size: 12px; font-weight: 500; border-radius: 6px; border: none; background: none; cursor: pointer; color: var(--text2); white-space: nowrap; transition: all 0.15s; }
+  .nav-tab.active { background: var(--blue-bg); color: var(--blue); font-weight: 600; }
+  .nav-tab:hover:not(.active) { background: var(--bg2); color: var(--text); }
   .nav-spacer { flex: 1; }
-  .todo-btn { padding: 5px 12px; font-size: 12px; font-weight: 500; border-radius: var(--radius); border: none; cursor: pointer; white-space: nowrap; background: var(--red); color: #fff; transition: background 0.15s; }
-  .todo-btn:hover { background: #791F1F; }
-  .todo-btn.active { background: #791F1F; outline: 2px solid #E24B4A; outline-offset: 1px; }
+  .todo-btn { padding: 6px 14px; font-size: 12px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; white-space: nowrap; background: #DC2626; color: #fff; transition: all 0.15s; box-shadow: 0 1px 3px rgba(220,38,38,0.3); }
+  .todo-btn:hover { background: #B91C1C; }
+  .todo-btn.active { background: #B91C1C; outline: 2px solid #FCA5A5; outline-offset: 1px; }
 
-  .content { padding: 16px; flex: 1; max-width: 900px; margin: 0 auto; width: 100%; }
+  .content { padding: 20px; flex: 1; max-width: 960px; margin: 0 auto; width: 100%; }
 
   /* Loading */
   .loading { display: flex; align-items: center; justify-content: center; padding: 60px 20px; color: var(--text2); font-size: 13px; gap: 10px; }
@@ -54,11 +60,11 @@
   /* Cards & Grids */
   .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin-bottom: 18px; }
   .metric-card { background: var(--bg2); border-radius: var(--radius); padding: 11px 13px; cursor: pointer; border: 1.5px solid transparent; transition: all 0.15s; }
-  .metric-card:hover { background: var(--bg); border-color: var(--border2); }
-  .metric-card.active-filter { border-color: var(--blue); background: var(--blue-bg); }
+  .metric-card:hover { background: #fff; border-color: var(--blue); box-shadow: var(--shadow-md); }
+  .metric-card.active-filter { border-color: var(--blue); background: var(--blue-bg); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
   .metric-label { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
   .metric-card.active-filter .metric-label { color: var(--blue-text); }
-  .metric-value { font-size: 22px; font-weight: 500; }
+  .metric-value { font-size: 26px; font-weight: 700; }
   .metric-value.ok { color: var(--green); }
   .metric-value.warn { color: var(--amber); }
   .metric-value.danger { color: var(--red); }
@@ -84,7 +90,7 @@
 
   .machine-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
   .machine-card { border: 0.5px solid var(--border); border-radius: var(--radius); padding: 10px 12px; cursor: pointer; background: var(--bg); transition: all 0.15s; }
-  .machine-card:hover { border-color: var(--border2); background: var(--bg2); }
+  .machine-card:hover { border-color: var(--blue); background: #fff; box-shadow: var(--shadow-md); transform: translateY(-1px); }
   .machine-card.flagged { border-color: var(--red-border); background: var(--red-bg); }
   .machine-card.warn-border { border-color: var(--amber-border); }
   .machine-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
@@ -93,19 +99,19 @@
   .machine-meta { font-size: 11px; color: var(--text2); margin-top: 3px; }
 
   .status-badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 500; white-space: nowrap; }
-  .s-ok { background: var(--green-bg); color: var(--green-text); }
-  .s-warn { background: var(--amber-bg); color: var(--amber-text); }
-  .s-err { background: var(--red-bg); color: var(--red); }
-  .s-flag { background: var(--red-bg); color: var(--red); }
+  .s-ok { background: #DCFCE7; color: #166534; font-weight: 600; }
+  .s-warn { background: #FEF3C7; color: #92400E; font-weight: 600; }
+  .s-err { background: #FEE2E2; color: #991B1B; font-weight: 600; }
+  .s-flag { background: #FEE2E2; color: #991B1B; font-weight: 600; }
 
   /* Detail */
-  .detail-panel { border: 0.5px solid var(--border); border-radius: var(--radius-lg); background: var(--bg); padding: 16px; }
+  .detail-panel { border: 1px solid var(--border); border-radius: var(--radius-lg); background: #fff; padding: 20px; box-shadow: var(--shadow-md); }
   .detail-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
   .detail-title { font-size: 16px; font-weight: 500; }
   .btn-row { display: flex; gap: 7px; flex-wrap: wrap; }
   .btn { padding: 6px 12px; font-size: 12px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: transparent; cursor: pointer; color: var(--text); transition: all 0.15s; font-weight: 500; }
   .btn:hover { background: var(--bg2); }
-  .btn.primary { background: var(--blue); color: #E6F1FB; border-color: var(--blue); }
+  .btn.primary { background: var(--navy); color: #fff; border-color: var(--navy); box-shadow: 0 1px 3px rgba(27,45,91,0.25); }
   .btn.primary:hover { background: var(--blue-text); }
   .btn.flag-btn { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber-border); }
   .btn.unflag-btn { background: var(--red-bg); color: var(--red); border-color: var(--red-border); }
@@ -129,11 +135,11 @@
   .h-sub { font-size: 11px; color: var(--text2); display: flex; gap: 8px; flex-wrap: wrap; }
 
   /* Forms */
-  .form-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .form-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md); }
   .form-section { padding: 16px 18px; border-bottom: 0.5px solid var(--border); }
   .form-section:last-of-type { border-bottom: none; }
   .form-section-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text2); margin-bottom: 13px; display: flex; align-items: center; gap: 8px; }
-  .s-num { width: 20px; height: 20px; border-radius: 50%; background: var(--blue); color: #fff; font-size: 11px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .s-num { width: 22px; height: 22px; border-radius: 50%; background: var(--navy); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
   .field-grid { display: grid; gap: 11px; }
   .field-grid.c2 { grid-template-columns: 1fr 1fr; }
@@ -237,7 +243,7 @@
   /* Locations page */
   .loc-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin-bottom: 24px; }
   .loc-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; position: relative; transition: border-color 0.15s; }
-  .loc-card:hover { border-color: var(--border2); }
+  .loc-card:hover { border-color: var(--blue); box-shadow: var(--shadow-md); }
   .loc-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
   .loc-card-name { font-size: 15px; font-weight: 500; }
   .loc-card-address { font-size: 12px; color: var(--text2); margin-top: 2px; }
@@ -250,7 +256,7 @@
   .loc-edit-btn:hover { background: var(--bg2); color: var(--text); }
   .loc-view-btn { font-size: 12px; padding: 5px 11px; border-radius: var(--radius); border: 0.5px solid var(--blue); background: var(--blue-bg); cursor: pointer; color: var(--blue-text); font-weight: 500; transition: all 0.15s; }
   .loc-view-btn:hover { background: var(--blue); color: #fff; }
-  .loc-initials { width: 38px; height: 38px; border-radius: var(--radius); background: var(--blue-bg); color: var(--blue-text); font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .loc-initials { width: 42px; height: 42px; border-radius: var(--radius); background: var(--navy); color: #fff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
   /* Edit/Add location modal */
   .loc-modal-wrap { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px 16px; overflow-y: auto; }
@@ -294,7 +300,10 @@
 <body>
 <div class="app" id="app">
   <div class="topbar">
-    <div class="topbar-brand">Spin &amp; Clean <span>Maintenance</span></div>
+    <div class="topbar-brand">
+      <div class="topbar-brand-main">Washboard</div>
+      <div class="topbar-brand-sub">Maintenance Hub</div>
+    </div>
     <div class="topbar-right" id="alert-count"></div>
   </div>
   <div class="location-tabs" id="loc-tabs"></div>
@@ -636,7 +645,7 @@ function renderContent() {
   if(state.dbError){
     el.innerHTML=`<div class="setup-card">
       <div class="setup-icon" style="font-size:28px;margin-bottom:12px;">&#9881;</div>
-      <div class="setup-title">Database not connected</div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--navy);opacity:.6;margin-bottom:4px;">Washboard Maintenance Hub</div><div class="setup-title">Database not connected</div>
       <div class="setup-sub">${state.dbError}</div>
       <div class="setup-steps">
         <div class="setup-step"><span class="step-n">1</span><span>Go to your Supabase project &rarr; SQL Editor</span></div>
