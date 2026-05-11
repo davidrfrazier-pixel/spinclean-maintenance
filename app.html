@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="theme-color" content="#1B2D5B"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<link rel="manifest" href="/team-manifest.json"/>
+<title>The Washboard Team App</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --navy:#1B2D5B; --navy-dark:#0F1E3E; --navy-light:#2A4080;
+  --bg:#F4F6FA; --card:#ffffff;
+  --text:#1a1a2e; --text2:#5a6478; --text3:#9aa0ae;
+  --border:rgba(27,45,91,0.1); --border2:rgba(27,45,91,0.2);
+  --radius:10px; --radius-lg:14px; --radius-xl:20px;
+  --blue:#2563EB; --blue-bg:#EEF4FF; --blue-text:#1D4ED8;
+  --green:#059669; --green-bg:#ECFDF5; --green-text:#065F46;
+  --amber:#D97706; --amber-bg:#FFFBEB; --amber-text:#92400E;
+  --red:#DC2626; --red-bg:#FEF2F2; --red-text:#991B1B;
+  --red-border:#FECACA; --amber-border:#FDE68A; --blue-border:#BFDBFE;
+  --shadow:0 1px 3px rgba(27,45,91,0.08),0 1px 2px rgba(27,45,91,0.05);
+  --shadow-md:0 4px 12px rgba(27,45,91,0.10),0 2px 4px rgba(27,45,91,0.06);
+  --shadow-lg:0 10px 25px rgba(27,45,91,0.12),0 4px 8px rgba(27,45,91,0.08);
+  --topbar-h:58px; --bottomnav-h:64px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;}
+
+/* ── LOADING ──────────────────────────────────────────────────────────────── */
+.splash{position:fixed;inset:0;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;}
+.splash-logo-main{font-size:48px;font-weight:700;color:#fff;font-style:italic;letter-spacing:-1px;}
+.splash-logo-sub{font-size:11px;font-weight:600;color:rgba(255,255,255,0.55);letter-spacing:.18em;text-transform:uppercase;margin-top:6px;}
+.splash-spinner{width:24px;height:24px;border:2.5px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-top:32px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── LOGIN ────────────────────────────────────────────────────────────────── */
+.login-screen{min-height:100vh;display:flex;flex-direction:column;background:var(--navy);}
+.login-hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px 32px;position:relative;overflow:hidden;}
+.login-hero::before{content:'';position:absolute;width:400px;height:400px;background:rgba(255,255,255,0.03);border-radius:50%;top:-100px;right:-100px;}
+.login-hero::after{content:'';position:absolute;width:300px;height:300px;background:rgba(255,255,255,0.03);border-radius:50%;bottom:-80px;left:-80px;}
+.login-logo{text-align:center;margin-bottom:8px;position:relative;z-index:1;}
+.login-logo-main{font-size:42px;font-weight:700;color:#fff;font-style:italic;letter-spacing:-1px;line-height:1;}
+.login-logo-divider{display:flex;align-items:center;gap:10px;margin:8px 0;}
+.login-logo-divider::before,.login-logo-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.2);}
+.login-logo-sub{font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:.2em;text-transform:uppercase;}
+.login-tagline{font-size:14px;color:rgba(255,255,255,0.6);text-align:center;margin-top:20px;line-height:1.6;max-width:280px;position:relative;z-index:1;}
+.login-card{background:#fff;border-radius:24px 24px 0 0;padding:32px 24px 48px;box-shadow:0 -4px 24px rgba(0,0,0,0.15);}
+.login-title{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.login-sub{font-size:13px;color:var(--text2);margin-bottom:24px;}
+.login-field{margin-bottom:16px;}
+.login-label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;letter-spacing:.02em;}
+.login-input{width:100%;padding:12px 14px;font-size:15px;border-radius:10px;border:1.5px solid var(--border2);background:#fff;color:var(--text);font-family:inherit;transition:border-color .15s;}
+.login-input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,45,91,0.1);}
+.login-btn{width:100%;padding:14px;font-size:15px;font-weight:600;background:var(--navy);color:#fff;border:none;border-radius:12px;cursor:pointer;transition:all .15s;margin-top:8px;box-shadow:0 2px 8px rgba(27,45,91,0.3);}
+.login-btn:hover{background:var(--navy-dark);}
+.login-btn:active{transform:scale(0.98);}
+.login-btn:disabled{opacity:0.6;cursor:not-allowed;}
+.login-error{background:var(--red-bg);border:1px solid var(--red-border);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--red-text);margin-bottom:14px;}
+.login-secure{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:16px;font-size:12px;color:var(--text3);}
+
+/* ── APP SHELL ────────────────────────────────────────────────────────────── */
+.app-shell{display:flex;flex-direction:column;min-height:100vh;}
+
+/* Topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:var(--topbar-h);background:var(--navy);position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.15);}
+.topbar-left{display:flex;align-items:center;gap:10px;}
+.topbar-brand{display:flex;flex-direction:column;line-height:1;}
+.topbar-brand-main{font-size:20px;font-weight:700;color:#fff;letter-spacing:-.3px;font-style:italic;}
+.topbar-brand-sub{font-size:9px;font-weight:600;color:rgba(255,255,255,0.55);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.topbar-user{display:flex;align-items:center;gap:8px;cursor:pointer;}
+.topbar-avatar{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.2);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(255,255,255,0.3);}
+.topbar-username{font-size:12px;color:rgba(255,255,255,0.8);font-weight:500;}
+.topbar-notif{position:relative;cursor:pointer;}
+.notif-icon{font-size:20px;color:rgba(255,255,255,0.75);}
+.notif-badge{position:absolute;top:-2px;right:-4px;background:var(--red);color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;}
+
+/* Location pill */
+.loc-pill{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.9);white-space:nowrap;}
+
+/* Bottom nav (mobile) */
+.bottom-nav{display:flex;background:#fff;border-top:1px solid var(--border);height:var(--bottomnav-h);position:sticky;bottom:0;z-index:100;box-shadow:0 -2px 10px rgba(27,45,91,0.08);}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border:none;background:none;transition:all .15s;position:relative;}
+.bnav-icon{font-size:20px;line-height:1;}
+.bnav-label{font-size:10px;font-weight:500;color:var(--text3);}
+.bnav-item.active .bnav-icon{color:var(--navy);}
+.bnav-item.active .bnav-label{color:var(--navy);font-weight:700;}
+.bnav-item:not(.active) .bnav-icon{color:var(--text3);}
+.bnav-badge{position:absolute;top:6px;right:calc(50% - 14px);background:var(--red);color:#fff;font-size:9px;font-weight:700;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;}
+
+/* Sidebar (admin desktop) */
+.sidebar-layout{display:flex;flex:1;}
+.sidebar{width:220px;background:var(--navy-dark);flex-shrink:0;display:flex;flex-direction:column;padding:16px 0;}
+.sidebar-section{margin-bottom:8px;}
+.sidebar-label{font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:.1em;padding:0 16px;margin-bottom:4px;}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;transition:all .15s;border:none;background:none;width:100%;text-align:left;color:rgba(255,255,255,0.65);font-size:13px;font-weight:500;font-family:inherit;border-left:3px solid transparent;}
+.sidebar-item:hover{background:rgba(255,255,255,0.07);color:#fff;}
+.sidebar-item.active{background:rgba(255,255,255,0.1);color:#fff;border-left-color:#60A5FA;font-weight:600;}
+.sidebar-item-icon{font-size:16px;flex-shrink:0;}
+.sidebar-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+.sidebar-logout{margin-top:auto;padding:16px 0 0;border-top:1px solid rgba(255,255,255,0.08);}
+.main-content{flex:1;overflow:auto;}
+
+/* Main content area */
+.content{padding:20px;max-width:860px;margin:0 auto;width:100%;}
+.content.full-width{max-width:none;}
+
+/* Page header */
+.page-header{margin-bottom:20px;}
+.page-title{font-size:22px;font-weight:700;color:var(--navy);}
+.page-sub{font-size:13px;color:var(--text2);margin-top:3px;}
+
+/* ── CARDS ────────────────────────────────────────────────────────────────── */
+.card{background:#fff;border-radius:var(--radius-lg);padding:16px;box-shadow:var(--shadow);border:1px solid var(--border);}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.card-title{font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;opacity:.7;}
+.card-link{font-size:12px;color:var(--blue);font-weight:600;cursor:pointer;background:none;border:none;}
+
+/* Stat grid */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+.stat-card{background:#fff;border-radius:var(--radius-lg);padding:16px;text-align:center;box-shadow:var(--shadow);border:1px solid var(--border);}
+.stat-icon{font-size:28px;margin-bottom:6px;}
+.stat-value{font-size:28px;font-weight:700;color:var(--navy);}
+.stat-label{font-size:11px;color:var(--text2);margin-top:2px;font-weight:500;}
+.stat-value.green{color:var(--green);}
+.stat-value.amber{color:var(--amber);}
+.stat-value.red{color:var(--red);}
+
+/* ── DONUT CHART ──────────────────────────────────────────────────────────── */
+.donut-wrap{display:flex;align-items:center;gap:20px;}
+.donut-svg{flex-shrink:0;}
+.donut-legend{display:flex;flex-direction:column;gap:8px;}
+.donut-legend-item{display:flex;align-items:center;gap:8px;font-size:12px;}
+.donut-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* ── SHIFT / CLOCK ────────────────────────────────────────────────────────── */
+.clock-card{background:var(--navy);border-radius:var(--radius-xl);padding:24px;color:#fff;margin-bottom:20px;position:relative;overflow:hidden;}
+.clock-card::before{content:'';position:absolute;width:200px;height:200px;background:rgba(255,255,255,0.04);border-radius:50%;top:-60px;right:-60px;}
+.clock-time{font-size:40px;font-weight:700;letter-spacing:-1px;margin-bottom:4px;}
+.clock-date{font-size:13px;color:rgba(255,255,255,0.65);margin-bottom:20px;}
+.clock-status{font-size:12px;color:rgba(255,255,255,0.75);margin-bottom:16px;display:flex;align-items:center;gap:6px;}
+.clock-status-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.3);}
+.clock-status-dot.in{background:#34D399;}
+.clock-btn{width:100%;padding:14px;font-size:15px;font-weight:700;border:none;border-radius:12px;cursor:pointer;transition:all .15s;}
+.clock-btn.in{background:#fff;color:var(--navy);}
+.clock-btn.out{background:rgba(255,255,255,0.15);color:#fff;border:2px solid rgba(255,255,255,0.4);}
+.clock-btn:active{transform:scale(0.97);}
+.gps-status{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,0.6);margin-top:10px;justify-content:center;}
+
+/* ── SCHEDULE ─────────────────────────────────────────────────────────────── */
+.week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.week-label{font-size:15px;font-weight:600;color:var(--navy);}
+.week-btn{background:none;border:1px solid var(--border2);border-radius:8px;padding:6px 12px;cursor:pointer;color:var(--text2);font-size:13px;transition:all .15s;}
+.week-btn:hover{background:var(--bg);border-color:var(--blue);}
+.day-cols{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+.day-col{text-align:center;}
+.day-col-header{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.day-col-date{font-size:14px;font-weight:600;color:var(--text2);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;}
+.day-col-date.today{background:var(--navy);color:#fff;}
+.shift-pill{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:6px;padding:4px 6px;font-size:10px;font-weight:600;color:var(--blue-text);margin-bottom:4px;cursor:pointer;transition:all .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.shift-pill:hover{background:var(--blue);color:#fff;}
+.shift-pill.mine{background:#EDE9FE;border-color:#C4B5FD;color:#5B21B6;}
+.add-shift-btn{width:28px;height:28px;border-radius:50%;border:1.5px dashed var(--border2);background:none;cursor:pointer;color:var(--text3);font-size:16px;display:flex;align-items:center;justify-content:center;margin:0 auto;transition:all .15s;}
+.add-shift-btn:hover{border-color:var(--blue);color:var(--blue);}
+
+/* ── MESSAGING ────────────────────────────────────────────────────────────── */
+.msg-list{display:flex;flex-direction:column;gap:0;}
+.msg-item{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid var(--border);}
+.msg-item:last-child{border-bottom:none;}
+.msg-avatar{width:36px;height:36px;border-radius:50%;background:var(--navy);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.msg-body{flex:1;min-width:0;}
+.msg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;}
+.msg-name{font-size:13px;font-weight:600;color:var(--navy);}
+.msg-time{font-size:11px;color:var(--text3);}
+.msg-text{font-size:13px;color:var(--text);line-height:1.5;}
+.msg-maintenance-tag{display:inline-flex;align-items:center;gap:4px;background:var(--red-bg);border:1px solid var(--red-border);color:var(--red-text);font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;}
+.msg-input-row{display:flex;gap:8px;padding:12px 0 0;border-top:1px solid var(--border);margin-top:4px;}
+.msg-input{flex:1;padding:10px 14px;border-radius:10px;border:1.5px solid var(--border2);font-size:13px;font-family:inherit;color:var(--text);transition:border-color .15s;}
+.msg-input:focus{outline:none;border-color:var(--navy);}
+.msg-send-btn{padding:10px 16px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.msg-send-btn:hover{background:var(--navy-dark);}
+.msg-flag-btn{padding:10px 12px;background:var(--red-bg);color:var(--red-text);border:1px solid var(--red-border);border-radius:10px;font-size:13px;cursor:pointer;transition:all .15s;white-space:nowrap;font-weight:600;}
+.msg-flag-btn:hover{background:var(--red);color:#fff;}
+
+/* Location channel tabs */
+.channel-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+.channel-tab{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--border2);background:transparent;cursor:pointer;color:var(--text2);transition:all .15s;}
+.channel-tab.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.channel-tab:hover:not(.active){border-color:var(--blue);color:var(--blue);}
+
+/* ── CHECKLIST ────────────────────────────────────────────────────────────── */
+.checklist-header{background:var(--navy);border-radius:var(--radius-lg);padding:16px;color:#fff;margin-bottom:16px;}
+.checklist-title{font-size:16px;font-weight:700;margin-bottom:4px;}
+.checklist-sub{font-size:12px;color:rgba(255,255,255,0.65);}
+.checklist-progress{height:4px;background:rgba(255,255,255,0.2);border-radius:4px;margin-top:12px;overflow:hidden;}
+.checklist-fill{height:100%;background:#34D399;border-radius:4px;transition:width .3s;}
+
+.check-item{display:flex;align-items:flex-start;gap:12px;padding:14px;background:#fff;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:8px;box-shadow:var(--shadow);transition:opacity .2s;}
+.check-item.done{opacity:.5;}
+.check-item.done .check-task{text-decoration:line-through;color:var(--text2);}
+.check-box{width:22px;height:22px;border-radius:6px;border:2px solid var(--border2);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;background:#fff;}
+.check-box.checked{background:var(--green);border-color:var(--green);}
+.check-box.checked::after{content:'✓';color:#fff;font-size:13px;font-weight:700;}
+.check-body{flex:1;}
+.check-task{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.check-cat{font-size:11px;color:var(--text3);}
+.check-photo-btn{font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid var(--blue-border);background:var(--blue-bg);color:var(--blue-text);cursor:pointer;font-weight:600;white-space:nowrap;}
+.check-photo-required{font-size:10px;color:var(--amber-text);font-weight:600;margin-top:2px;}
+
+/* ── SUPPLY REQUESTS ──────────────────────────────────────────────────────── */
+.supply-form{background:#fff;border-radius:var(--radius-lg);padding:16px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:16px;}
+.urgency-chips{display:flex;gap:8px;flex-wrap:wrap;}
+.urgency-chip{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:2px solid transparent;transition:all .15s;}
+.urgency-chip.low{background:var(--green-bg);color:var(--green-text);border-color:#A7F3D0;}
+.urgency-chip.medium{background:var(--amber-bg);color:var(--amber-text);border-color:var(--amber-border);}
+.urgency-chip.urgent{background:var(--red-bg);color:var(--red-text);border-color:var(--red-border);}
+.urgency-chip.selected{outline:2px solid currentColor;outline-offset:2px;}
+.supply-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:8px;box-shadow:var(--shadow);}
+.supply-urgency-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.supply-urgency-dot.low{background:var(--green);}
+.supply-urgency-dot.medium{background:var(--amber);}
+.supply-urgency-dot.urgent{background:var(--red);}
+.supply-info{flex:1;min-width:0;}
+.supply-name{font-size:13px;font-weight:600;color:var(--text);}
+.supply-meta{font-size:11px;color:var(--text2);margin-top:2px;}
+.supply-status-badge{font-size:10px;padding:3px 9px;border-radius:10px;font-weight:700;white-space:nowrap;}
+.supply-open{background:var(--red-bg);color:var(--red-text);}
+.supply-ordered{background:var(--amber-bg);color:var(--amber-text);}
+.supply-resolved{background:var(--green-bg);color:var(--green-text);}
+
+/* ── HR DOCUMENTS ─────────────────────────────────────────────────────────── */
+.doc-category{margin-bottom:20px;}
+.doc-category-title{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+.doc-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer;transition:all .15s;}
+.doc-item:hover{border-color:var(--blue);box-shadow:var(--shadow-md);}
+.doc-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.doc-icon.pdf{background:#FEE2E2;}
+.doc-icon.doc{background:#EEF4FF;}
+.doc-info{flex:1;min-width:0;}
+.doc-name{font-size:13px;font-weight:600;color:var(--text);}
+.doc-meta{font-size:11px;color:var(--text2);margin-top:2px;}
+.doc-required-badge{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--amber-bg);color:var(--amber-text);font-weight:700;white-space:nowrap;}
+.doc-ack-badge{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--green-bg);color:var(--green-text);font-weight:700;white-space:nowrap;}
+
+/* ── EMPLOYEE MANAGEMENT ─────────────────────────────────────────────────── */
+.employee-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+.employee-card{background:#fff;border-radius:var(--radius-lg);padding:16px;box-shadow:var(--shadow);border:1px solid var(--border);cursor:pointer;transition:all .15s;text-align:center;}
+.employee-card:hover{border-color:var(--blue);box-shadow:var(--shadow-md);transform:translateY(-1px);}
+.emp-avatar{width:52px;height:52px;border-radius:50%;background:var(--navy);color:#fff;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;}
+.emp-name{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:4px;}
+.emp-role-badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;text-transform:capitalize;}
+.role-admin{background:var(--navy);color:#fff;}
+.role-manager{background:var(--blue-bg);color:var(--blue-text);}
+.role-maintenance{background:var(--amber-bg);color:var(--amber-text);}
+.role-attendant{background:var(--green-bg);color:var(--green-text);}
+.emp-location{font-size:11px;color:var(--text2);margin-top:6px;}
+
+/* ── TIMESHEET ────────────────────────────────────────────────────────────── */
+.timesheet-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:8px;box-shadow:var(--shadow);}
+.timesheet-date{font-size:12px;font-weight:700;color:var(--navy);min-width:60px;}
+.timesheet-times{flex:1;}
+.timesheet-in{font-size:13px;font-weight:600;color:var(--green-text);}
+.timesheet-out{font-size:13px;font-weight:600;color:var(--red-text);}
+.timesheet-hours{font-size:13px;font-weight:700;color:var(--navy);min-width:50px;text-align:right;}
+.gps-ok{color:var(--green-text);font-size:11px;}
+.gps-warn{color:var(--amber-text);font-size:11px;}
+
+/* ── FORMS ────────────────────────────────────────────────────────────────── */
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.field label{font-size:12px;font-weight:600;color:var(--text2);letter-spacing:.02em;}
+.field label .req{color:var(--red);margin-left:2px;}
+.field input,.field select,.field textarea{padding:10px 12px;font-size:14px;border-radius:10px;border:1.5px solid var(--border2);background:#fff;color:var(--text);font-family:inherit;transition:border-color .15s;}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,45,91,0.1);}
+.field textarea{min-height:80px;resize:vertical;}
+.field-hint{font-size:11px;color:var(--text3);}
+.field-err{font-size:11px;color:var(--red);}
+.form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:480px){.form-grid-2{grid-template-columns:1fr;}}
+
+/* Buttons */
+.btn{padding:8px 16px;font-size:13px;font-weight:600;border-radius:10px;border:1.5px solid var(--border2);background:transparent;cursor:pointer;color:var(--text);transition:all .15s;font-family:inherit;}
+.btn:hover{background:var(--bg);}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.btn-primary{background:var(--navy);color:#fff;border-color:var(--navy);box-shadow:0 1px 4px rgba(27,45,91,0.25);}
+.btn-primary:hover:not(:disabled){background:var(--navy-dark);}
+.btn-danger{background:var(--red-bg);color:var(--red-text);border-color:var(--red-border);}
+.btn-danger:hover{background:var(--red);color:#fff;}
+.btn-ghost{border:none;background:none;color:var(--text2);}
+.btn-ghost:hover{color:var(--text);background:none;}
+.btn-sm{padding:5px 12px;font-size:12px;}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:flex-end;justify-content:center;}
+@media(min-width:600px){.modal-overlay{align-items:center;}}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;}
+@media(min-width:600px){.modal{border-radius:16px;}}
+.modal-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px;}
+.modal-title{font-size:17px;font-weight:700;color:var(--navy);margin-bottom:16px;}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:20px;color:var(--text2);}
+
+/* Alerts / banners */
+.alert{padding:12px 14px;border-radius:10px;font-size:13px;border:1px solid;margin-bottom:14px;}
+.alert.info{background:var(--blue-bg);border-color:var(--blue-border);color:var(--blue-text);}
+.alert.success{background:var(--green-bg);border-color:#A7F3D0;color:var(--green-text);}
+.alert.warn{background:var(--amber-bg);border-color:var(--amber-border);color:var(--amber-text);}
+.alert.error{background:var(--red-bg);border-color:var(--red-border);color:var(--red-text);}
+
+/* Empty state */
+.empty-state{text-align:center;padding:40px 20px;color:var(--text2);}
+.empty-icon{font-size:40px;margin-bottom:12px;}
+.empty-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px;}
+.empty-sub{font-size:13px;line-height:1.6;}
+
+/* Loading spinner inline */
+.spinner{width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;}
+
+/* Divider */
+.divider{height:1px;background:var(--border);margin:16px 0;}
+
+/* Misc */
+.text-navy{color:var(--navy);} .text-muted{color:var(--text2);} .fw-600{font-weight:600;} .fw-700{font-weight:700;}
+.mt-4{margin-top:4px;} .mt-8{margin-top:8px;} .mt-12{margin-top:12px;} .mt-16{margin-top:16px;}
+.mb-8{margin-bottom:8px;} .mb-12{margin-bottom:12px;} .mb-16{margin-bottom:16px;}
+.flex{display:flex;} .flex-col{flex-direction:column;} .items-center{align-items:center;} .justify-between{justify-content:space-between;} .gap-8{gap:8px;} .gap-12{gap:12px;}
+
+/* Responsive hide/show */
+@media(max-width:768px){.desktop-only{display:none!important;} .sidebar{display:none!important;}}
+@media(min-width:769px){.mobile-only{display:none!important;} .bottom-nav{display:none!important;}}
+</style>
+</head>
+<body>
+
+<!-- Splash screen -->
+<div class="splash" id="splash">
+  <div class="login-logo-main">Washboard</div>
+  <div class="login-logo-sub">Team App</div>
+  <div class="splash-spinner"></div>
+</div>
+
+<!-- App root -->
+<div id="root" style="display:none;"></div>
+
+<!-- Modal container -->
+<div id="modal-root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ─── CONFIG ────────────────────────────────────────────────────────────────
+const SUPA_URL = 'https://dpgfuzowfliyxdkmwgbc.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwZ2Z1em93ZmxpeXhka213Z2JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MTI5NTMsImV4cCI6MjA5NDA4ODk1M30.sNDHbSn8SEsByxf5JSF67mA0xoey6iutY_ymEeSGKA0';
+const db = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ─── LOCATION COORDINATES (for GPS clock-in) ───────────────────────────────
+const LOCATION_COORDS = {
+  'The Washboard':          { lat: 36.8920, lng: -94.8718 },
+  'Laundry Central':        { lat: 36.8765, lng: -94.8615 },
+  'Hickory Creek Laundry':  { lat: 36.8680, lng: -94.3620 },
+  'Broadway Laundry Express':{ lat: 37.4018, lng: -94.7040 },
+};
+const GPS_RADIUS_METERS = 300;
+
+// ─── STATE ─────────────────────────────────────────────────────────────────
+let state = {
+  user: null,           // logged-in user record from our users table
+  session: null,        // supabase auth session (for future auth)
+  locations: [],        // all locations
+  myLocations: [],      // locations assigned to this user
+  activeLocId: null,    // currently viewed location
+  tab: 'home',          // current tab/screen
+  loading: true,
+  loginLoading: false,
+  loginError: null,
+  messages: [],
+  messageChanLocId: null,
+  shifts: [],           // shifts for current week/location
+  weekOffset: 0,        // 0 = current week
+  timeclock: null,      // active clock-in record
+  clockLoading: false,
+  gpsStatus: null,      // 'ok' | 'warn' | 'checking' | null
+  gpsCoords: null,
+  checklists: [],       // checklist templates for current location
+  checkCompletions: {}, // { templateId: { completed, photo_url } }
+  supplyRequests: [],
+  supplyUrgency: 'low',
+  employees: [],
+  hrDocuments: [],
+  timesheets: [],
+  modalContent: null,
+  notifCount: 0,
+};
+
+// ─── HELPERS ───────────────────────────────────────────────────────────────
+function getInitials(name) {
+  if (!name) return '?';
+  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function formatTime(dt) {
+  if (!dt) return '—';
+  return new Date(dt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function nowDisplay() {
+  return new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
+}
+
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function getWeekDates(offset = 0) {
+  const now = new Date();
+  const day = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - day + 1 + offset * 7);
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d.toISOString().split('T')[0];
+  });
+}
+
+function roleLabel(role) {
+  const map = { admin: 'Admin', manager: 'Manager', maintenance: 'Maintenance', attendant: 'Attendant' };
+  return map[role] || role;
+}
+
+function hasPerm(perm) {
+  const role = state.user?.role;
+  const perms = {
+    admin: ['all'],
+    manager: ['machines', 'schedule', 'team', 'messages', 'supply', 'hr', 'timesheets'],
+    maintenance: ['machines', 'schedule', 'messages', 'supply', 'hr'],
+    attendant: ['schedule', 'checklist', 'messages', 'supply', 'hr', 'clock'],
+  };
+  if (!role) return false;
+  const p = perms[role] || [];
+  return p.includes('all') || p.includes(perm);
+}
+
+function distanceMeters(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+// ─── SESSION (simple email/name auth stored in localStorage) ───────────────
+function saveSession(user) {
+  localStorage.setItem('wb_user', JSON.stringify(user));
+}
+function loadSession() {
+  try { return JSON.parse(localStorage.getItem('wb_user')); } catch { return null; }
+}
+function clearSession() {
+  localStorage.removeItem('wb_user');
+}
+
+// ─── DB ────────────────────────────────────────────────────────────────────
+async function dbGetUser(email) {
+  const { data, error } = await db.from('users').select('*').eq('email', email.toLowerCase().trim()).single();
+  return { data, error };
+}
+async function dbGetLocations() {
+  const { data } = await db.from('locations').select('*').order('name');
+  return data || [];
+}
+async function dbGetUserLocations(userId) {
+  const { data } = await db.from('user_locations').select('*, locations(*)').eq('user_id', userId);
+  return data || [];
+}
+async function dbGetMessages(locId) {
+  const { data } = await db.from('messages').select('*, users(name, role)').eq('location_id', locId).order('created_at', { ascending: false }).limit(50);
+  return data || [];
+}
+async function dbSendMessage(locId, userId, body, isMaintFlag) {
+  const { data, error } = await db.from('messages').insert([{ location_id: locId, user_id: userId, body, is_maintenance_flag: isMaintFlag }]);
+  return { data, error };
+}
+async function dbGetShifts(locId, dateFrom, dateTo) {
+  const { data } = await db.from('shifts').select('*, users(name, role)').eq('location_id', locId).gte('shift_date', dateFrom).lte('shift_date', dateTo).order('start_time');
+  return data || [];
+}
+async function dbCreateShift(rec) {
+  const { data, error } = await db.from('shifts').insert([rec]).select().single();
+  return { data, error };
+}
+async function dbDeleteShift(id) {
+  const { error } = await db.from('shifts').delete().eq('id', id);
+  return error;
+}
+async function dbClockIn(userId, locId, lat, lng, verified) {
+  const { data, error } = await db.from('timeclock').insert([{
+    user_id: userId, location_id: locId,
+    clock_in: new Date().toISOString(),
+    clock_in_lat: lat, clock_in_lng: lng,
+    gps_verified: verified,
+  }]).select().single();
+  return { data, error };
+}
+async function dbClockOut(id, lat, lng) {
+  const { data, error } = await db.from('timeclock').update({
+    clock_out: new Date().toISOString(),
+    clock_out_lat: lat, clock_out_lng: lng,
+  }).eq('id', id).select().single();
+  return { data, error };
+}
+async function dbGetActiveClockIn(userId) {
+  const { data } = await db.from('timeclock').select('*').eq('user_id', userId).is('clock_out', null).order('clock_in', { ascending: false }).limit(1);
+  return data?.[0] || null;
+}
+async function dbGetTimesheets(userId) {
+  const { data } = await db.from('timeclock').select('*, locations(name)').eq('user_id', userId).order('clock_in', { ascending: false }).limit(30);
+  return data || [];
+}
+async function dbGetEmployees() {
+  const { data } = await db.from('users').select('*, user_locations(locations(name))').order('name');
+  return data || [];
+}
+async function dbUpsertEmployee(rec) {
+  if (rec.id) {
+    const { data, error } = await db.from('users').update(rec).eq('id', rec.id).select().single();
+    return { data, error };
+  }
+  const { data, error } = await db.from('users').insert([rec]).select().single();
+  return { data, error };
+}
+async function dbGetChecklistTemplates(locId) {
+  const { data } = await db.from('checklist_templates').select('*').eq('location_id', locId).eq('active', true).order('sort_order');
+  return data || [];
+}
+async function dbGetSupplyRequests(locId) {
+  const { data } = await db.from('supply_requests').select('*, users(name)').eq('location_id', locId).order('created_at', { ascending: false }).limit(40);
+  return data || [];
+}
+async function dbSubmitSupplyRequest(rec) {
+  const { data, error } = await db.from('supply_requests').insert([rec]).select().single();
+  return { data, error };
+}
+async function dbUpdateSupplyStatus(id, status, resolvedBy, resolverNote) {
+  const { error } = await db.from('supply_requests').update({
+    status, resolved_by: resolvedBy, resolver_note: resolverNote,
+    resolved_at: status === 'resolved' ? new Date().toISOString() : null,
+  }).eq('id', id);
+  return error;
+}
+async function dbGetHRDocuments() {
+  const { data } = await db.from('hr_documents').select('*').order('category').order('created_at', { ascending: false });
+  return data || [];
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+async function init() {
+  // Try restoring session
+  const saved = loadSession();
+  if (saved) {
+    const { data } = await dbGetUser(saved.email);
+    if (data) {
+      state.user = data;
+      await afterLogin();
+      hideSplash();
+      return;
+    }
+  }
+  hideSplash();
+  renderLogin();
+}
+
+function hideSplash() {
+  setTimeout(() => {
+    const splash = document.getElementById('splash');
+    if (splash) { splash.style.opacity = '0'; splash.style.transition = 'opacity .4s'; setTimeout(() => splash.remove(), 400); }
+    document.getElementById('root').style.display = 'block';
+  }, 800);
+}
+
+async function afterLogin() {
+  // Load all locations
+  state.locations = await dbGetLocations();
+  // Load user's assigned locations
+  const ul = await dbGetUserLocations(state.user.id);
+  if (state.user.role === 'admin') {
+    state.myLocations = state.locations;
+  } else {
+    state.myLocations = ul.map(u => u.locations).filter(Boolean);
+  }
+  state.activeLocId = state.myLocations[0]?.id || state.locations[0]?.id || null;
+  // Check for active clock-in
+  state.timeclock = await dbGetActiveClockIn(state.user.id);
+  // Load initial data
+  if (state.activeLocId) {
+    state.messages = await dbGetMessages(state.activeLocId);
+    state.messageChanLocId = state.activeLocId;
+    state.supplyRequests = await dbGetSupplyRequests(state.activeLocId);
+    state.checklists = await dbGetChecklistTemplates(state.activeLocId);
+  }
+  if (hasPerm('machines')) {
+    const weekDates = getWeekDates(state.weekOffset);
+    if (state.activeLocId) state.shifts = await dbGetShifts(state.activeLocId, weekDates[0], weekDates[6]);
+  }
+  state.hrDocuments = await dbGetHRDocuments();
+  // Set default tab based on role
+  state.tab = state.user.role === 'attendant' ? 'home' : 'home';
+  // Start clock ticker
+  startClockTicker();
+  render();
+}
+
+// ─── LOGIN ─────────────────────────────────────────────────────────────────
+function renderLogin() {
+  document.getElementById('root').innerHTML = `
+    <div class="login-screen">
+      <div class="login-hero">
+        <div class="login-logo">
+          <div class="login-logo-main">Washboard</div>
+          <div class="login-logo-divider">
+            <span class="login-logo-sub">Laundry Co.</span>
+          </div>
+        </div>
+        <div class="login-tagline">Keeping your laundromat running smoothly — manage your team, all in one place.</div>
+      </div>
+      <div class="login-card">
+        <div class="login-title">Welcome back</div>
+        <div class="login-sub">Sign in to your account</div>
+        ${state.loginError ? `<div class="login-error">${state.loginError}</div>` : ''}
+        <div class="login-field">
+          <label class="login-label">Email address</label>
+          <input class="login-input" id="li-email" type="email" placeholder="you@example.com" autocomplete="email"/>
+        </div>
+        <div class="login-field">
+          <label class="login-label">Password</label>
+          <input class="login-input" id="li-password" type="password" placeholder="••••••••" autocomplete="current-password"/>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px;">For the demo, any password works — just enter your registered email.</div>
+        </div>
+        <button class="login-btn" onclick="handleLogin()" id="login-btn">${state.loginLoading ? '<span class="spinner" style="width:16px;height:16px;border-top-color:#fff;"></span>' : 'Sign in'}</button>
+        <div class="login-secure">🔒 Secure. Simple. Built for your team.</div>
+      </div>
+    </div>`;
+
+  // Enter key triggers login
+  setTimeout(() => {
+    document.getElementById('li-password')?.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+    document.getElementById('li-email')?.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('li-password')?.focus(); });
+  }, 0);
+}
+
+async function handleLogin() {
+  const email = document.getElementById('li-email')?.value?.trim();
+  const password = document.getElementById('li-password')?.value;
+  if (!email) { state.loginError = 'Please enter your email address.'; renderLogin(); return; }
+  state.loginLoading = true; state.loginError = null; renderLogin();
+  const { data, error } = await dbGetUser(email);
+  if (error || !data) {
+    state.loginLoading = false;
+    state.loginError = 'No account found with that email. Contact your administrator.';
+    renderLogin();
+    return;
+  }
+  state.user = data;
+  saveSession({ email: data.email });
+  state.loginLoading = false;
+  await afterLogin();
+}
+
+function logout() {
+  clearSession();
+  state.user = null; state.tab = 'home'; state.timeclock = null;
+  state.messages = []; state.shifts = []; state.employees = [];
+  if (state.clockInterval) clearInterval(state.clockInterval);
+  renderLogin();
+}
+
+// ─── CLOCK TICKER ──────────────────────────────────────────────────────────
+function startClockTicker() {
+  if (state.clockInterval) clearInterval(state.clockInterval);
+  state.clockInterval = setInterval(() => {
+    const el = document.getElementById('live-clock');
+    if (el) el.textContent = nowDisplay();
+  }, 1000);
+}
+
+// ─── RENDER ────────────────────────────────────────────────────────────────
+function render() {
+  const root = document.getElementById('root');
+  const role = state.user?.role;
+  const isMobile = window.innerWidth < 769;
+  const isAdmin = role === 'admin';
+
+  const tabs = getTabsForRole(role);
+  const activeTab = state.tab;
+
+  root.innerHTML = `
+    <div class="app-shell">
+      ${renderTopbar()}
+      ${isAdmin && !isMobile ? `
+        <div class="sidebar-layout">
+          ${renderSidebar(tabs, activeTab)}
+          <div class="main-content">
+            ${renderTabContent(activeTab)}
+          </div>
+        </div>
+      ` : `
+        ${renderTabContent(activeTab)}
+        ${renderBottomNav(tabs, activeTab)}
+      `}
+    </div>`;
+
+  // Re-attach modal
+  renderModal();
+  // Restart clock ticker
+  startClockTicker();
+}
+
+function getTabsForRole(role) {
+  const all = [
+    { id: 'home',      icon: '🏠', label: 'Home' },
+    { id: 'schedule',  icon: '📅', label: 'Schedule' },
+    { id: 'messages',  icon: '💬', label: 'Messages' },
+    { id: 'supplies',  icon: '📦', label: 'Supplies' },
+    { id: 'hr',        icon: '📋', label: 'Docs' },
+    { id: 'team',      icon: '👥', label: 'Team', adminOnly: true },
+    { id: 'timesheets',icon: '⏱', label: 'Hours' },
+  ];
+  return all.filter(t => {
+    if (t.adminOnly) return role === 'admin' || role === 'manager';
+    return true;
+  });
+}
+
+function renderTopbar() {
+  const u = state.user;
+  const loc = state.myLocations.find(l => l.id === state.activeLocId);
+  return `
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-brand">
+          <div class="topbar-brand-main">Washboard</div>
+          <div class="topbar-brand-sub">Team App</div>
+        </div>
+        ${loc ? `<div class="loc-pill desktop-only">${loc.name}</div>` : ''}
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-notif" onclick="goTab('messages')">
+          <div class="notif-icon">🔔</div>
+          ${state.notifCount > 0 ? `<div class="notif-badge">${state.notifCount}</div>` : ''}
+        </div>
+        <div class="topbar-user" onclick="showUserMenu()">
+          <div class="topbar-avatar">${getInitials(u?.name)}</div>
+          <div class="topbar-username desktop-only">${u?.name?.split(' ')[0] || ''}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderSidebar(tabs, active) {
+  const alerts = state.supplyRequests.filter(r => r.status === 'open').length;
+  return `
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Navigation</div>
+        ${tabs.map(t => `
+          <button class="sidebar-item ${active === t.id ? 'active' : ''}" onclick="goTab('${t.id}')">
+            <span class="sidebar-item-icon">${t.icon}</span>
+            ${t.label}
+            ${t.id === 'supplies' && alerts > 0 ? `<span class="sidebar-badge">${alerts}</span>` : ''}
+          </button>`).join('')}
+      </div>
+      <div class="sidebar-logout">
+        <button class="sidebar-item" onclick="logout()">
+          <span class="sidebar-item-icon">🚪</span> Sign out
+        </button>
+      </div>
+    </div>`;
+}
+
+function renderBottomNav(tabs, active) {
+  const alerts = state.supplyRequests.filter(r => r.status === 'open').length;
+  const display = tabs.slice(0, 5);
+  return `
+    <div class="bottom-nav">
+      ${display.map(t => `
+        <button class="bnav-item ${active === t.id ? 'active' : ''}" onclick="goTab('${t.id}')">
+          ${t.id === 'supplies' && alerts > 0 ? `<div class="bnav-badge">${alerts}</div>` : ''}
+          <div class="bnav-icon">${t.icon}</div>
+          <div class="bnav-label">${t.label}</div>
+        </button>`).join('')}
+    </div>`;
+}
+
+function renderTabContent(tab) {
+  const content = (() => {
+    switch (tab) {
+      case 'home':       return renderHome();
+      case 'schedule':   return renderSchedule();
+      case 'messages':   return renderMessages();
+      case 'supplies':   return renderSupplies();
+      case 'hr':         return renderHR();
+      case 'team':       return renderTeam();
+      case 'timesheets': return renderTimesheets();
+      case 'checklist':  return renderChecklist();
+      default:           return renderHome();
+    }
+  })();
+  return `<div class="content">${content}</div>`;
+}
+
+// ─── HOME ──────────────────────────────────────────────────────────────────
+function renderHome() {
+  const u = state.user;
+  const role = u?.role;
+  const greeting = getGreeting();
+  const loc = state.myLocations.find(l => l.id === state.activeLocId);
+
+  // Location switcher for multi-location users
+  const locSwitcher = state.myLocations.length > 1 ? `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+      ${state.myLocations.map(l => `
+        <button onclick="switchLoc('${l.id}')" style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:2px solid ${l.id===state.activeLocId?'var(--navy)':'var(--border2)'};background:${l.id===state.activeLocId?'var(--navy)':'transparent'};color:${l.id===state.activeLocId?'#fff':'var(--text2)'};cursor:pointer;transition:all .15s;">${l.name}</button>
+      `).join('')}
+    </div>` : '';
+
+  return `
+    <div class="page-header">
+      <div class="page-title">${greeting}, ${u?.name?.split(' ')[0]}!</div>
+      <div class="page-sub">Here's what's happening ${loc ? 'at ' + loc.name : 'today'}.</div>
+    </div>
+    ${locSwitcher}
+    ${renderClockWidget()}
+    ${role === 'attendant' ? renderAttendantHome() : ''}
+    ${role === 'maintenance' ? renderMaintenanceHome() : ''}
+    ${(role === 'admin' || role === 'manager') ? renderAdminHome() : ''}
+  `;
+}
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function renderClockWidget() {
+  const isClockedIn = !!state.timeclock;
+  const clockInTime = state.timeclock ? formatTime(state.timeclock.clock_in) : null;
+  const loc = state.myLocations.find(l => l.id === state.activeLocId);
+
+  return `
+    <div class="clock-card" style="margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div class="clock-time" id="live-clock">${nowDisplay()}</div>
+          <div class="clock-date">${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:4px;">Status</div>
+          <div style="display:flex;align-items:center;gap:5px;">
+            <div class="clock-status-dot ${isClockedIn ? 'in' : ''}"></div>
+            <span style="font-size:12px;font-weight:600;color:${isClockedIn ? '#34D399' : 'rgba(255,255,255,0.5)'};">${isClockedIn ? 'Clocked In' : 'Not clocked in'}</span>
+          </div>
+          ${isClockedIn ? `<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:3px;">Since ${clockInTime}</div>` : ''}
+        </div>
+      </div>
+      <div style="margin-top:16px;">
+        <button class="clock-btn ${isClockedIn ? 'out' : 'in'}" onclick="${isClockedIn ? 'handleClockOut()' : 'handleClockIn()'}" ${state.clockLoading ? 'disabled' : ''}>
+          ${state.clockLoading ? '⏳ Please wait...' : isClockedIn ? '⏹ Clock Out' : '▶ Clock In' + (loc ? ' at ' + loc.name : '')}
+        </button>
+      </div>
+      <div class="gps-status">
+        ${state.gpsStatus === 'checking' ? '📡 Checking location...' : ''}
+        ${state.gpsStatus === 'ok' ? '✅ Location verified' : ''}
+        ${state.gpsStatus === 'warn' ? '⚠️ Outside normal range — clocked in anyway' : ''}
+        ${!state.gpsStatus ? '📍 GPS will verify your location on clock-in' : ''}
+      </div>
+    </div>`;
+}
+
+function renderAttendantHome() {
+  const todayShifts = state.shifts.filter(s => s.shift_date === todayStr() && s.user_id === state.user?.id);
+  const openSupplies = state.supplyRequests.filter(r => r.status === 'open' && r.user_id === state.user?.id).length;
+
+  return `
+    <div class="stat-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="stat-card" onclick="goTab('schedule')" style="cursor:pointer;">
+        <div class="stat-icon">📅</div>
+        <div class="stat-value">${todayShifts.length}</div>
+        <div class="stat-label">Shift${todayShifts.length !== 1 ? 's' : ''} today</div>
+      </div>
+      <div class="stat-card" onclick="goTab('supplies')" style="cursor:pointer;">
+        <div class="stat-icon">📦</div>
+        <div class="stat-value ${openSupplies > 0 ? 'amber' : ''}">${openSupplies}</div>
+        <div class="stat-label">Open requests</div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-header">
+        <div class="card-title">Today's shift</div>
+        <button class="card-link" onclick="goTab('schedule')">View schedule →</button>
+      </div>
+      ${todayShifts.length === 0
+        ? '<div class="empty-state" style="padding:20px 0;"><div class="empty-sub">No shifts scheduled for today.</div></div>'
+        : todayShifts.map(s => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--navy);">${s.start_time?.slice(0,5)} – ${s.end_time?.slice(0,5)}</div>
+              <div style="font-size:12px;color:var(--text2);">${s.position || 'Attendant'}</div>
+            </div>
+            <span style="font-size:11px;padding:3px 10px;background:var(--green-bg);color:var(--green-text);border-radius:10px;font-weight:600;">Scheduled</span>
+          </div>`).join('')}
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:10px;" onclick="goTab('checklist')">📝 View today's checklist</button>
+    <button class="btn" style="width:100%;background:#fff;border-color:var(--red-border);color:var(--red-text);" onclick="goTab('messages')">⚠️ Report a maintenance issue</button>
+  `;
+}
+
+function renderMaintenanceHome() {
+  const alerts = state.supplyRequests.filter(r => r.status === 'open').length;
+  const todayShifts = state.shifts.filter(s => s.shift_date === todayStr() && s.user_id === state.user?.id);
+
+  return `
+    <div class="stat-grid">
+      <div class="stat-card" onclick="goTab('schedule')" style="cursor:pointer;">
+        <div class="stat-icon">📅</div>
+        <div class="stat-value">${todayShifts.length}</div>
+        <div class="stat-label">Today's shifts</div>
+      </div>
+      <div class="stat-card" onclick="goTab('supplies')" style="cursor:pointer;">
+        <div class="stat-icon">📦</div>
+        <div class="stat-value ${alerts > 0 ? 'amber' : 'green'}">${alerts}</div>
+        <div class="stat-label">Open supply requests</div>
+      </div>
+      <div class="stat-card" onclick="goTab('messages')" style="cursor:pointer;">
+        <div class="stat-icon">💬</div>
+        <div class="stat-value">${state.messages.length}</div>
+        <div class="stat-label">Messages</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Today's schedule</div>
+        <button class="card-link" onclick="goTab('schedule')">Full schedule →</button>
+      </div>
+      ${todayShifts.length === 0
+        ? '<div class="empty-state" style="padding:16px 0;"><div class="empty-sub">No shifts today.</div></div>'
+        : todayShifts.map(s => `
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+            <div style="font-size:13px;font-weight:600;">${s.start_time?.slice(0,5)} – ${s.end_time?.slice(0,5)}</div>
+            <div style="font-size:12px;color:var(--text2);">${s.position || 'Maintenance'}</div>
+          </div>`).join('')}
+    </div>`;
+}
+
+function renderAdminHome() {
+  const openSupply = state.supplyRequests.filter(r => r.status === 'open').length;
+  const urgentSupply = state.supplyRequests.filter(r => r.status === 'open' && r.urgency === 'urgent').length;
+  const maintMessages = state.messages.filter(m => m.is_maintenance_flag).length;
+
+  return `
+    <div class="stat-grid">
+      <div class="stat-card" onclick="goTab('team')" style="cursor:pointer;">
+        <div class="stat-icon">👥</div>
+        <div class="stat-value">${state.employees.length || '—'}</div>
+        <div class="stat-label">Team members</div>
+      </div>
+      <div class="stat-card" onclick="goTab('supplies')" style="cursor:pointer;">
+        <div class="stat-icon">📦</div>
+        <div class="stat-value ${openSupply > 0 ? 'amber' : 'green'}">${openSupply}</div>
+        <div class="stat-label">Open supply requests</div>
+      </div>
+      <div class="stat-card" onclick="goTab('messages')" style="cursor:pointer;">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-value ${maintMessages > 0 ? 'red' : 'green'}">${maintMessages}</div>
+        <div class="stat-label">Maintenance flags</div>
+      </div>
+    </div>
+    ${urgentSupply > 0 ? `
+      <div class="alert warn" style="margin-bottom:16px;">
+        ⚠️ <strong>${urgentSupply} urgent supply request${urgentSupply !== 1 ? 's' : ''}</strong> need${urgentSupply === 1 ? 's' : ''} your attention.
+        <button class="card-link" style="margin-left:8px;" onclick="goTab('supplies')">View →</button>
+      </div>` : ''}
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Recent maintenance flags</div>
+        <button class="card-link" onclick="goTab('messages')">View all →</button>
+      </div>
+      ${state.messages.filter(m => m.is_maintenance_flag).slice(0, 3).map(m => `
+        <div style="padding:10px 0;border-bottom:1px solid var(--border);">
+          <div class="msg-maintenance-tag">⚠ Maintenance Issue</div>
+          <div style="font-size:13px;color:var(--text);">${m.body}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px;">${m.users?.name || 'Unknown'} · ${new Date(m.created_at).toLocaleDateString()}</div>
+        </div>`).join('') || '<div class="empty-state" style="padding:16px 0;"><div class="empty-sub">No maintenance flags.</div></div>'}
+    </div>`;
+}
+
+// ─── SCHEDULE ──────────────────────────────────────────────────────────────
+function renderSchedule() {
+  const weekDates = getWeekDates(state.weekOffset);
+  const today = todayStr();
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const canEdit = state.user?.role === 'admin' || state.user?.role === 'manager';
+  const weekStart = new Date(weekDates[0] + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const weekEnd = new Date(weekDates[6] + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  return `
+    <div class="page-header">
+      <div class="page-title">Schedule</div>
+    </div>
+    <div class="week-nav">
+      <button class="week-btn" onclick="changeWeek(-1)">← Prev</button>
+      <div class="week-label">${weekStart} – ${weekEnd}</div>
+      <button class="week-btn" onclick="changeWeek(1)">Next →</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <div class="day-cols" style="min-width:480px;">
+        ${weekDates.map((date, i) => {
+          const dayShifts = state.shifts.filter(s => s.shift_date === date);
+          const isToday = date === today;
+          return `
+            <div class="day-col">
+              <div class="day-col-header">${days[i]}</div>
+              <div class="day-col-date ${isToday ? 'today' : ''}">${new Date(date + 'T00:00:00').getDate()}</div>
+              ${dayShifts.map(s => {
+                const isMine = s.user_id === state.user?.id;
+                return `<div class="shift-pill ${isMine ? 'mine' : ''}" title="${s.users?.name} · ${s.start_time?.slice(0,5)}–${s.end_time?.slice(0,5)}" onclick="showShiftDetail('${s.id}')">
+                  <div>${s.start_time?.slice(0,5)}</div>
+                  <div style="font-size:9px;opacity:.8;">${s.users?.name?.split(' ')[0] || ''}</div>
+                </div>`;
+              }).join('')}
+              ${canEdit ? `<button class="add-shift-btn" onclick="showAddShift('${date}')">+</button>` : ''}
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:12px;font-size:11px;color:var(--text2);">
+      <div style="display:flex;align-items:center;gap:5px;"><div style="width:12px;height:12px;border-radius:3px;background:#EDE9FE;border:1px solid #C4B5FD;"></div> My shifts</div>
+      <div style="display:flex;align-items:center;gap:5px;"><div style="width:12px;height:12px;border-radius:3px;background:var(--blue-bg);border:1px solid var(--blue-border);"></div> Others</div>
+    </div>`;
+}
+
+// ─── MESSAGES ──────────────────────────────────────────────────────────────
+function renderMessages() {
+  const canSwitchChannels = state.user?.role === 'admin' || state.user?.role === 'manager';
+  const msgs = [...state.messages].reverse();
+
+  return `
+    <div class="page-header">
+      <div class="page-title">Messages</div>
+      <div class="page-sub">${state.myLocations.find(l=>l.id===state.messageChanLocId)?.name || ''}</div>
+    </div>
+    ${canSwitchChannels ? `
+      <div class="channel-tabs">
+        ${state.myLocations.map(l => `
+          <button class="channel-tab ${l.id === state.messageChanLocId ? 'active' : ''}" onclick="switchMessageChan('${l.id}')">${l.name}</button>
+        `).join('')}
+      </div>` : ''}
+    <div class="card" style="margin-bottom:16px;">
+      <div class="msg-list">
+        ${msgs.length === 0
+          ? '<div class="empty-state" style="padding:20px 0;"><div class="empty-sub">No messages yet. Start the conversation!</div></div>'
+          : msgs.map(m => `
+            <div class="msg-item">
+              <div class="msg-avatar" style="background:${m.is_maintenance_flag ? 'var(--red)' : 'var(--navy)'};">${getInitials(m.users?.name)}</div>
+              <div class="msg-body">
+                ${m.is_maintenance_flag ? '<div class="msg-maintenance-tag">⚠ Maintenance Issue</div>' : ''}
+                <div class="msg-header">
+                  <div class="msg-name">${m.users?.name || 'Unknown'}</div>
+                  <div class="msg-time">${new Date(m.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true})}</div>
+                </div>
+                <div class="msg-text">${m.body}</div>
+              </div>
+            </div>`).join('')}
+      </div>
+      <div class="msg-input-row">
+        <input class="msg-input" id="msg-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMessage(false)"/>
+        <button class="msg-flag-btn" onclick="sendMessage(true)" title="Flag maintenance issue">⚠️</button>
+        <button class="msg-send-btn" onclick="sendMessage(false)">Send</button>
+      </div>
+    </div>`;
+}
+
+// ─── SUPPLIES ──────────────────────────────────────────────────────────────
+function renderSupplies() {
+  const isAdmin = state.user?.role === 'admin' || state.user?.role === 'manager';
+  const open = state.supplyRequests.filter(r => r.status === 'open');
+  const ordered = state.supplyRequests.filter(r => r.status === 'ordered' || r.status === 'in_progress');
+  const resolved = state.supplyRequests.filter(r => r.status === 'resolved').slice(0, 5);
+
+  return `
+    <div class="page-header">
+      <div class="page-title">Supply Requests</div>
+      <div class="page-sub">Report low or needed supplies</div>
+    </div>
+    <div class="supply-form">
+      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;">📦 Submit a request</div>
+      <div class="field">
+        <label>Supply needed <span class="req">*</span></label>
+        <input id="supply-name" placeholder="e.g. Laundry detergent, paper towels, coins..." style="padding:10px 12px;font-size:14px;border-radius:10px;border:1.5px solid var(--border2);font-family:inherit;width:100%;"/>
+      </div>
+      <div class="field">
+        <label>Urgency</label>
+        <div class="urgency-chips">
+          ${['low','medium','urgent'].map(u => `
+            <div class="urgency-chip ${u} ${state.supplyUrgency===u?'selected':''}" onclick="setSupplyUrgency('${u}')">${u.charAt(0).toUpperCase()+u.slice(1)}</div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="field">
+        <label>Notes</label>
+        <input id="supply-notes" placeholder="Additional details (optional)..." style="padding:10px 12px;font-size:14px;border-radius:10px;border:1.5px solid var(--border2);font-family:inherit;width:100%;"/>
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="submitSupplyRequest()">Submit request</button>
+    </div>
+
+    ${open.length > 0 ? `
+      <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Open (${open.length})</div>
+      ${open.map(r => supplyItem(r, isAdmin)).join('')}` : ''}
+
+    ${ordered.length > 0 ? `
+      <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 10px;">In Progress (${ordered.length})</div>
+      ${ordered.map(r => supplyItem(r, isAdmin)).join('')}` : ''}
+
+    ${resolved.length > 0 ? `
+      <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 10px;">Resolved</div>
+      ${resolved.map(r => supplyItem(r, isAdmin)).join('')}` : ''}
+
+    ${state.supplyRequests.length === 0 ? '<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-title">No supply requests</div><div class="empty-sub">Submit a request above if you notice something running low.</div></div>' : ''}
+  `;
+}
+
+function supplyItem(r, isAdmin) {
+  const statusMap = { open: 'supply-open', ordered: 'supply-ordered', in_progress: 'supply-ordered', resolved: 'supply-resolved' };
+  const statusLabel = { open: 'Open', ordered: 'Ordered', in_progress: 'In Progress', resolved: 'Resolved' };
+  return `
+    <div class="supply-item">
+      <div class="supply-urgency-dot ${r.urgency}"></div>
+      <div class="supply-info">
+        <div class="supply-name">${r.supply_name}</div>
+        <div class="supply-meta">${r.users?.name || 'Unknown'} · ${new Date(r.created_at).toLocaleDateString()} · ${r.urgency}</div>
+        ${r.notes ? `<div style="font-size:12px;color:var(--text2);margin-top:2px;">${r.notes}</div>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        <span class="supply-status-badge ${statusMap[r.status]}">${statusLabel[r.status]}</span>
+        ${isAdmin && r.status === 'open' ? `
+          <button class="btn btn-sm" style="font-size:10px;padding:3px 8px;background:var(--amber-bg);border-color:var(--amber-border);color:var(--amber-text);" onclick="updateSupply('${r.id}','ordered')">Mark ordered</button>
+          <button class="btn btn-sm" style="font-size:10px;padding:3px 8px;background:var(--green-bg);border-color:#A7F3D0;color:var(--green-text);" onclick="updateSupply('${r.id}','resolved')">Resolve</button>
+        ` : ''}
+        ${isAdmin && (r.status === 'ordered' || r.status === 'in_progress') ? `
+          <button class="btn btn-sm" style="font-size:10px;padding:3px 8px;background:var(--green-bg);border-color:#A7F3D0;color:var(--green-text);" onclick="updateSupply('${r.id}','resolved')">Resolve</button>
+        ` : ''}
+      </div>
+    </div>`;
+}
+
+// ─── HR DOCUMENTS ──────────────────────────────────────────────────────────
+function renderHR() {
+  const isAdmin = state.user?.role === 'admin';
+  const categories = [...new Set(state.hrDocuments.map(d => d.category))];
+
+  return `
+    <div class="page-header">
+      <div class="page-title">Documents &amp; Resources</div>
+      <div class="page-sub">Company handbook, policies, and onboarding materials</div>
+    </div>
+    ${isAdmin ? `
+      <button class="btn btn-primary" style="margin-bottom:16px;" onclick="showUploadDocModal()">+ Upload document</button>
+    ` : ''}
+    ${state.hrDocuments.length === 0 ? `
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">No documents yet</div>
+        <div class="empty-sub">${isAdmin ? 'Upload your employee handbook, onboarding materials, and policies.' : 'Documents will appear here once your admin uploads them.'}</div>
+      </div>` :
+      categories.map(cat => {
+        const docs = state.hrDocuments.filter(d => d.category === cat);
+        return `
+          <div class="doc-category">
+            <div class="doc-category-title">${cat}</div>
+            ${docs.map(d => `
+              <div class="doc-item" onclick="openDoc('${d.id}')">
+                <div class="doc-icon pdf">📄</div>
+                <div class="doc-info">
+                  <div class="doc-name">${d.title}</div>
+                  <div class="doc-meta">${d.file_name || 'Document'} · Added ${new Date(d.created_at).toLocaleDateString()}</div>
+                </div>
+                ${d.required ? '<span class="doc-required-badge">Required</span>' : ''}
+              </div>`).join('')}
+          </div>`;
+      }).join('')}
+  `;
+}
+
+// ─── TEAM ──────────────────────────────────────────────────────────────────
+function renderTeam() {
+  const role = state.user?.role;
+  if (role !== 'admin' && role !== 'manager') return '<div class="empty-state"><div class="empty-title">Access restricted</div></div>';
+
+  return `
+    <div class="page-header">
+      <div class="page-title">Team</div>
+      <div class="page-sub">${state.employees.length} team member${state.employees.length !== 1 ? 's' : ''}</div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:16px;">
+      <button class="btn btn-primary" onclick="showAddEmployee()">+ Add employee</button>
+    </div>
+    ${state.employees.length === 0
+      ? `<div class="empty-state">
+          <div class="empty-icon">👥</div>
+          <div class="empty-title">No team members yet</div>
+          <div class="empty-sub">Add your first employee to get started.</div>
+        </div>`
+      : `<div class="employee-grid">
+          ${state.employees.map(e => `
+            <div class="employee-card" onclick="showEmployeeDetail('${e.id}')">
+              <div class="emp-avatar">${getInitials(e.name)}</div>
+              <div class="emp-name">${e.name}</div>
+              <span class="emp-role-badge role-${e.role}">${roleLabel(e.role)}</span>
+              <div class="emp-location">${e.user_locations?.map(ul => ul.locations?.name).filter(Boolean).join(', ') || 'No location assigned'}</div>
+            </div>`).join('')}
+        </div>`}
+  `;
+}
+
+// ─── CHECKLIST ─────────────────────────────────────────────────────────────
+function renderChecklist() {
+  const tasks = state.checklists;
+  const done = tasks.filter(t => state.checkCompletions[t.id]?.completed).length;
+  const total = tasks.length;
+  const pct = total === 0 ? 100 : Math.round(done/total*100);
+
+  const categories = [...new Set(tasks.map(t => t.category || 'General'))];
+
+  return `
+    <div class="page-header">
+      <div class="page-title">Shift Checklist</div>
+    </div>
+    <div class="checklist-header">
+      <div class="checklist-title">Today's Tasks</div>
+      <div class="checklist-sub">${done} of ${total} completed</div>
+      <div class="checklist-progress"><div class="checklist-fill" style="width:${pct}%"></div></div>
+    </div>
+    ${total === 0
+      ? `<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">No tasks yet</div><div class="empty-sub">Your manager hasn't set up a checklist for this location yet.</div></div>`
+      : categories.map(cat => {
+          const catTasks = tasks.filter(t => (t.category || 'General') === cat);
+          return `
+            <div style="margin-bottom:16px;">
+              <div class="section-title" style="margin-bottom:10px;">${cat}</div>
+              ${catTasks.map(t => {
+                const comp = state.checkCompletions[t.id];
+                const isDone = !!comp?.completed;
+                return `
+                  <div class="check-item ${isDone ? 'done' : ''}">
+                    <div class="check-box ${isDone ? 'checked' : ''}" onclick="toggleCheckItem('${t.id}')"></div>
+                    <div class="check-body">
+                      <div class="check-task">${t.task_name}</div>
+                      <div class="check-cat">${cat}</div>
+                      ${t.photo_required ? '<div class="check-photo-required">📷 Photo required</div>' : ''}
+                      ${isDone && t.photo_required && !comp?.photo_url ? '<div class="check-photo-required">📷 Don\'t forget to add a photo!</div>' : ''}
+                    </div>
+                    ${isDone && t.photo_required ? `<button class="check-photo-btn" onclick="addCheckPhoto('${t.id}')">📷 ${comp?.photo_url ? 'View photo' : 'Add photo'}</button>` : ''}
+                  </div>`;
+              }).join('')}
+            </div>`;
+        }).join('')}
+  `;
+}
+
+// ─── TIMESHEETS ────────────────────────────────────────────────────────────
+function renderTimesheets() {
+  const isAdmin = state.user?.role === 'admin' || state.user?.role === 'manager';
+
+  function hoursLabel(clockIn, clockOut) {
+    if (!clockIn || !clockOut) return '—';
+    const ms = new Date(clockOut) - new Date(clockIn);
+    const hrs = ms / 3600000;
+    return hrs.toFixed(1) + 'h';
+  }
+
+  return `
+    <div class="page-header">
+      <div class="page-title">My Hours</div>
+      <div class="page-sub">Recent timeclock history</div>
+    </div>
+    ${state.timesheets.length === 0
+      ? `<div class="empty-state"><div class="empty-icon">⏱</div><div class="empty-title">No timesheet records yet</div><div class="empty-sub">Clock in from the Home tab to start tracking your hours.</div></div>`
+      : state.timesheets.map(t => `
+          <div class="timesheet-row">
+            <div class="timesheet-date">${new Date(t.clock_in).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+            <div class="timesheet-times" style="flex:1;">
+              <div class="timesheet-in">▶ ${formatTime(t.clock_in)}</div>
+              <div class="timesheet-out">${t.clock_out ? '⏹ ' + formatTime(t.clock_out) : '<span style="color:var(--green-text);font-weight:600;font-size:12px;">Currently clocked in</span>'}</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:2px;">${t.locations?.name || '—'}</div>
+            </div>
+            <div>
+              <div class="timesheet-hours">${hoursLabel(t.clock_in, t.clock_out)}</div>
+              <div class="${t.gps_verified ? 'gps-ok' : 'gps-warn'}">${t.gps_verified ? '✅ GPS' : '⚠️ GPS'}</div>
+            </div>
+          </div>`).join('')}
+  `;
+}
+
+// ─── ACTIONS ───────────────────────────────────────────────────────────────
+async function goTab(tab) {
+  state.tab = tab;
+  // Lazy load data per tab
+  if (tab === 'team' && state.employees.length === 0) {
+    state.employees = await dbGetEmployees();
+  }
+  if (tab === 'timesheets') {
+    state.timesheets = await dbGetTimesheets(state.user.id);
+  }
+  if (tab === 'schedule') {
+    const wd = getWeekDates(state.weekOffset);
+    state.shifts = await dbGetShifts(state.activeLocId, wd[0], wd[6]);
+  }
+  render();
+}
+
+async function switchLoc(locId) {
+  state.activeLocId = locId;
+  state.messages = await dbGetMessages(locId);
+  state.messageChanLocId = locId;
+  state.supplyRequests = await dbGetSupplyRequests(locId);
+  state.checklists = await dbGetChecklistTemplates(locId);
+  const wd = getWeekDates(state.weekOffset);
+  state.shifts = await dbGetShifts(locId, wd[0], wd[6]);
+  render();
+}
+
+async function changeWeek(dir) {
+  state.weekOffset += dir;
+  const wd = getWeekDates(state.weekOffset);
+  state.shifts = await dbGetShifts(state.activeLocId, wd[0], wd[6]);
+  render();
+}
+
+async function switchMessageChan(locId) {
+  state.messageChanLocId = locId;
+  state.messages = await dbGetMessages(locId);
+  render();
+}
+
+async function sendMessage(isMaintFlag) {
+  const input = document.getElementById('msg-input');
+  const body = input?.value?.trim();
+  if (!body) return;
+  if (!state.messageChanLocId) return;
+  input.value = '';
+  const { error } = await dbSendMessage(state.messageChanLocId, state.user.id, body, isMaintFlag);
+  if (!error) {
+    state.messages = await dbGetMessages(state.messageChanLocId);
+    render();
+    // Scroll to bottom
+    setTimeout(() => {
+      const list = document.querySelector('.msg-list');
+      if (list) list.scrollTop = list.scrollHeight;
+    }, 50);
+  }
+}
+
+// ─── CLOCK IN / OUT ────────────────────────────────────────────────────────
+async function handleClockIn() {
+  state.clockLoading = true;
+  state.gpsStatus = 'checking';
+  render();
+  try {
+    const pos = await getCurrentPosition();
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    state.gpsCoords = { lat, lng };
+    // Check against location coords
+    const loc = state.myLocations.find(l => l.id === state.activeLocId);
+    const expected = loc ? LOCATION_COORDS[loc.name] : null;
+    let verified = false;
+    if (expected) {
+      const dist = distanceMeters(lat, lng, expected.lat, expected.lng);
+      verified = dist <= GPS_RADIUS_METERS;
+      state.gpsStatus = verified ? 'ok' : 'warn';
+    } else {
+      state.gpsStatus = 'ok';
+      verified = true;
+    }
+    const { data, error } = await dbClockIn(state.user.id, state.activeLocId, lat, lng, verified);
+    if (!error && data) { state.timeclock = data; }
+  } catch (e) {
+    // GPS denied — clock in anyway without verification
+    state.gpsStatus = 'warn';
+    const { data, error } = await dbClockIn(state.user.id, state.activeLocId, null, null, false);
+    if (!error && data) { state.timeclock = data; }
+  }
+  state.clockLoading = false;
+  render();
+}
+
+async function handleClockOut() {
+  if (!state.timeclock) return;
+  state.clockLoading = true;
+  render();
+  try {
+    const pos = await getCurrentPosition();
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    const { data } = await dbClockOut(state.timeclock.id, lat, lng);
+    state.timeclock = null;
+  } catch (e) {
+    const { data } = await dbClockOut(state.timeclock.id, null, null);
+    state.timeclock = null;
+  }
+  state.gpsStatus = null;
+  state.clockLoading = false;
+  state.timesheets = await dbGetTimesheets(state.user.id);
+  render();
+}
+
+function getCurrentPosition() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) reject(new Error('No geolocation'));
+    navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000 });
+  });
+}
+
+// ─── SUPPLY ACTIONS ────────────────────────────────────────────────────────
+function setSupplyUrgency(u) { state.supplyUrgency = u; render(); }
+
+async function submitSupplyRequest() {
+  const name = document.getElementById('supply-name')?.value?.trim();
+  const notes = document.getElementById('supply-notes')?.value?.trim();
+  if (!name) { alert('Please enter a supply name.'); return; }
+  const { data, error } = await dbSubmitSupplyRequest({
+    location_id: state.activeLocId,
+    user_id: state.user.id,
+    supply_name: name,
+    urgency: state.supplyUrgency,
+    notes: notes || null,
+    status: 'open',
+  });
+  if (error) { alert('Error submitting request: ' + error.message); return; }
+  state.supplyRequests = await dbGetSupplyRequests(state.activeLocId);
+  state.supplyUrgency = 'low';
+  render();
+}
+
+async function updateSupply(id, status) {
+  await dbUpdateSupplyStatus(id, status, state.user.id, null);
+  state.supplyRequests = await dbGetSupplyRequests(state.activeLocId);
+  render();
+}
+
+// ─── CHECKLIST ACTIONS ─────────────────────────────────────────────────────
+function toggleCheckItem(templateId) {
+  const current = state.checkCompletions[templateId] || {};
+  state.checkCompletions[templateId] = { ...current, completed: !current.completed, completed_at: new Date().toISOString() };
+  render();
+}
+
+function addCheckPhoto(templateId) {
+  // In production this would open the camera/file picker and upload to Supabase Storage
+  alert('📷 Photo upload will open the camera in the installed PWA. This feature requires the app to be installed on your device.');
+}
+
+// ─── MODALS ────────────────────────────────────────────────────────────────
+function renderModal() {
+  const root = document.getElementById('modal-root');
+  if (!state.modalContent) { root.innerHTML = ''; return; }
+  root.innerHTML = `
+    <div class="modal-overlay" onclick="closeModal(event)">
+      <div class="modal" id="modal-inner">
+        <div class="modal-handle"></div>
+        ${state.modalContent}
+      </div>
+    </div>`;
+}
+
+function closeModal(e) {
+  if (!e || e.target.classList.contains('modal-overlay')) {
+    state.modalContent = null;
+    renderModal();
+  }
+}
+
+function showAddEmployee() {
+  state.modalContent = `
+    <div class="modal-title">Add team member</div>
+    <div class="field"><label>Full name <span class="req">*</span></label><input id="em-name" placeholder="Jane Smith"/></div>
+    <div class="field"><label>Email <span class="req">*</span></label><input id="em-email" type="email" placeholder="jane@example.com"/></div>
+    <div class="field"><label>Phone</label><input id="em-phone" placeholder="(555) 000-0000" type="tel"/></div>
+    <div class="field"><label>Role <span class="req">*</span></label>
+      <select id="em-role">
+        <option value="attendant">Attendant</option>
+        <option value="maintenance">Maintenance</option>
+        <option value="manager">Manager</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div class="field"><label>Assigned location</label>
+      <select id="em-loc">
+        <option value="">Select location...</option>
+        ${state.locations.map(l => `<option value="${l.id}">${l.name}</option>`).join('')}
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEmployee()">Save</button>
+    </div>`;
+  renderModal();
+}
+
+function showEmployeeDetail(empId) {
+  const emp = state.employees.find(e => e.id === empId);
+  if (!emp) return;
+  const locs = emp.user_locations?.map(ul => ul.locations?.name).filter(Boolean).join(', ') || 'None';
+  state.modalContent = `
+    <div class="modal-title">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="emp-avatar" style="width:44px;height:44px;">${getInitials(emp.name)}</div>
+        <div>
+          <div style="font-size:17px;font-weight:700;color:var(--navy);">${emp.name}</div>
+          <span class="emp-role-badge role-${emp.role}">${roleLabel(emp.role)}</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+      <div style="display:flex;gap:10px;"><span style="font-size:12px;font-weight:600;color:var(--text2);width:80px;">Email</span><span style="font-size:13px;">${emp.email}</span></div>
+      <div style="display:flex;gap:10px;"><span style="font-size:12px;font-weight:600;color:var(--text2);width:80px;">Phone</span><span style="font-size:13px;">${emp.phone || '—'}</span></div>
+      <div style="display:flex;gap:10px;"><span style="font-size:12px;font-weight:600;color:var(--text2);width:80px;">Locations</span><span style="font-size:13px;">${locs}</span></div>
+      <div style="display:flex;gap:10px;"><span style="font-size:12px;font-weight:600;color:var(--text2);width:80px;">Joined</span><span style="font-size:13px;">${new Date(emp.created_at).toLocaleDateString()}</span></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn" onclick="closeModal()">Close</button>
+    </div>`;
+  renderModal();
+}
+
+async function saveEmployee() {
+  const name = document.getElementById('em-name')?.value?.trim();
+  const email = document.getElementById('em-email')?.value?.trim();
+  const phone = document.getElementById('em-phone')?.value?.trim();
+  const role = document.getElementById('em-role')?.value;
+  const locId = document.getElementById('em-loc')?.value;
+  if (!name || !email || !role) { alert('Name, email, and role are required.'); return; }
+  const { data, error } = await dbUpsertEmployee({ name, email: email.toLowerCase(), phone: phone || null, role });
+  if (error) { alert('Error saving: ' + error.message); return; }
+  // Assign location if selected
+  if (locId && data?.id) {
+    await db.from('user_locations').upsert([{ user_id: data.id, location_id: locId }], { onConflict: 'user_id,location_id' });
+  }
+  state.employees = await dbGetEmployees();
+  state.modalContent = null;
+  renderModal();
+  render();
+}
+
+function showAddShift(date) {
+  state.modalContent = `
+    <div class="modal-title">Add shift — ${formatDate(date)}</div>
+    <div class="field"><label>Employee <span class="req">*</span></label>
+      <select id="sh-user">
+        <option value="">Select employee...</option>
+        ${state.employees.map(e => `<option value="${e.id}">${e.name}</option>`).join('')}
+      </select>
+    </div>
+    <div class="form-grid-2">
+      <div class="field"><label>Start time <span class="req">*</span></label><input id="sh-start" type="time" value="08:00"/></div>
+      <div class="field"><label>End time <span class="req">*</span></label><input id="sh-end" type="time" value="16:00"/></div>
+    </div>
+    <div class="field"><label>Position</label><input id="sh-pos" placeholder="e.g. Attendant, Maintenance"/></div>
+    <div class="field"><label>Notes</label><input id="sh-notes" placeholder="Optional"/></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveShift('${date}')">Save shift</button>
+    </div>`;
+  renderModal();
+  // Load employees if needed
+  if (state.employees.length === 0) {
+    dbGetEmployees().then(e => { state.employees = e; renderModal(); });
+  }
+}
+
+async function saveShift(date) {
+  const userId = document.getElementById('sh-user')?.value;
+  const start = document.getElementById('sh-start')?.value;
+  const end = document.getElementById('sh-end')?.value;
+  const pos = document.getElementById('sh-pos')?.value?.trim();
+  const notes = document.getElementById('sh-notes')?.value?.trim();
+  if (!userId || !start || !end) { alert('Employee, start and end time are required.'); return; }
+  const { error } = await dbCreateShift({ user_id: userId, location_id: state.activeLocId, shift_date: date, start_time: start, end_time: end, position: pos || null, notes: notes || null });
+  if (error) { alert('Error saving shift: ' + error.message); return; }
+  const wd = getWeekDates(state.weekOffset);
+  state.shifts = await dbGetShifts(state.activeLocId, wd[0], wd[6]);
+  state.modalContent = null;
+  renderModal();
+  render();
+}
+
+function showShiftDetail(shiftId) {
+  const shift = state.shifts.find(s => s.id === shiftId);
+  if (!shift) return;
+  const canEdit = state.user?.role === 'admin' || state.user?.role === 'manager';
+  state.modalContent = `
+    <div class="modal-title">Shift details</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+      <div style="display:flex;gap:10px;"><span style="font-size:12px;font-weight:600;color:var(--text2);width:80px;">Employee</span><span style="font-size:13px;font-weight:600;">${shift.users?.name || '—'}</span></div>
+      <div style="display:flex;gap:10px;"><span style="font-size:12px;font-weight:600;color:var(--text2);width:80px;">Date</span><span style="font-size:13px;">${formatDate(shift.shift_date)}</span></div>
+      <div style="display:flex;gap:10px;"><span style="font-size:12px;font-weight:600;color:var(--text2);width:80px;">Time</span><span style="font-size:13px;">${shift.start_time?.slice(0,5)} – ${shift.end_time?.slice(0,5)}</span></div>
+      <div style="display:flex;gap:10px;"><span style="font-size:12px;font-weight:600;color:var(--text2);width:80px;">Position</span><span style="font-size:13px;">${shift.position || '—'}</span></div>
+      ${shift.notes ? `<div style="display:flex;gap:10px;"><span style="font-size:12px;font-weight:600;color:var(--text2);width:80px;">Notes</span><span style="font-size:13px;">${shift.notes}</span></div>` : ''}
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      ${canEdit ? `<button class="btn btn-danger" onclick="deleteShift('${shift.id}')">Delete</button>` : ''}
+      <button class="btn btn-primary" onclick="closeModal()">Close</button>
+    </div>`;
+  renderModal();
+}
+
+async function deleteShift(shiftId) {
+  if (!confirm('Remove this shift?')) return;
+  await dbDeleteShift(shiftId);
+  const wd = getWeekDates(state.weekOffset);
+  state.shifts = await dbGetShifts(state.activeLocId, wd[0], wd[6]);
+  state.modalContent = null;
+  renderModal();
+  render();
+}
+
+function showUploadDocModal() {
+  state.modalContent = `
+    <div class="modal-title">Upload document</div>
+    <div class="alert info" style="margin-bottom:14px;">Documents are stored in Supabase Storage. For the demo, you can add document records with a URL to an existing file.</div>
+    <div class="field"><label>Title <span class="req">*</span></label><input id="doc-title" placeholder="e.g. Employee Handbook 2026"/></div>
+    <div class="field"><label>Category <span class="req">*</span></label>
+      <select id="doc-cat">
+        <option value="Onboarding">Onboarding</option>
+        <option value="Handbook">Handbook</option>
+        <option value="Policy">Policy</option>
+        <option value="Training">Training</option>
+      </select>
+    </div>
+    <div class="field"><label>File URL <span class="req">*</span></label><input id="doc-url" placeholder="https://..." type="url"/></div>
+    <div class="field"><label>File name</label><input id="doc-fname" placeholder="handbook.pdf"/></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+      <input type="checkbox" id="doc-required" style="width:16px;height:16px;"/>
+      <label for="doc-required" style="font-size:13px;font-weight:500;">Mark as required reading</label>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveDocument()">Save</button>
+    </div>`;
+  renderModal();
+}
+
+async function saveDocument() {
+  const title = document.getElementById('doc-title')?.value?.trim();
+  const category = document.getElementById('doc-cat')?.value;
+  const fileUrl = document.getElementById('doc-url')?.value?.trim();
+  const fileName = document.getElementById('doc-fname')?.value?.trim();
+  const required = document.getElementById('doc-required')?.checked;
+  if (!title || !fileUrl) { alert('Title and file URL are required.'); return; }
+  const { error } = await db.from('hr_documents').insert([{ title, category, file_url: fileUrl, file_name: fileName || null, required, uploaded_by: state.user.id }]);
+  if (error) { alert('Error saving: ' + error.message); return; }
+  state.hrDocuments = await dbGetHRDocuments();
+  state.modalContent = null;
+  renderModal();
+  render();
+}
+
+function openDoc(docId) {
+  const doc = state.hrDocuments.find(d => d.id === docId);
+  if (!doc) return;
+  window.open(doc.file_url, '_blank');
+}
+
+function showUserMenu() {
+  state.modalContent = `
+    <div class="modal-title">My account</div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+      <div class="emp-avatar" style="width:52px;height:52px;font-size:20px;">${getInitials(state.user?.name)}</div>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:var(--navy);">${state.user?.name}</div>
+        <div style="font-size:13px;color:var(--text2);">${state.user?.email}</div>
+        <span class="emp-role-badge role-${state.user?.role}" style="margin-top:4px;">${roleLabel(state.user?.role)}</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button class="btn" style="width:100%;text-align:left;justify-content:flex-start;" onclick="goTab('timesheets');closeModal();">⏱ My hours</button>
+      <button class="btn" style="width:100%;text-align:left;justify-content:flex-start;" onclick="goTab('hr');closeModal();">📋 Documents</button>
+      <div style="height:1px;background:var(--border);margin:4px 0;"></div>
+      <button class="btn btn-danger" style="width:100%;" onclick="logout()">🚪 Sign out</button>
+    </div>`;
+  renderModal();
+}
+
+// ─── STARTUP ───────────────────────────────────────────────────────────────
+window.addEventListener('resize', () => { if (state.user) render(); });
+init();
+</script>
+</body>
+</html>
