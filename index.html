@@ -1327,7 +1327,7 @@ function renderSupplies() {
       <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 10px;">Resolved</div>
       ${resolved.map(r => supplyItem(r, isAdmin)).join('')}` : ''}
 
-    ${state.supplyRequests.length === 0 ? '<div class="empty-state"><div class="empty-icon">${ICONS.box}</div><div class="empty-title">No supply requests</div><div class="empty-sub">Submit a request above if you notice something running low.</div></div>' : ''}
+    ${state.supplyRequests.length === 0 ? '<div class="empty-state"><div class="empty-icon">' + ICONS.box + '</div><div class="empty-title">No supply requests</div><div class="empty-sub">Submit a request above if you notice something running low.</div></div>' : ''}
   `;
 }
 
@@ -3213,15 +3213,23 @@ async function submitSupplyRequest() {
   const name = document.getElementById('supply-name')?.value?.trim();
   const notes = document.getElementById('supply-notes')?.value?.trim();
   if (!name) { alert('Please enter a supply name.'); return; }
-  const { error } = await db.from('supply_requests').insert([{
-    location_id: state.activeLocId, user_id: state.user.id,
-    supply_name: name, urgency: state.supplyUrgency,
-    notes: notes || null, status: 'open'
-  }]);
-  if (error) { alert('Error: ' + error.message); return; }
-  state.supplyRequests = await dbGetSupplyRequests(state.activeLocId);
-  state.supplyUrgency = 'low';
-  render();
+  try {
+    const { data, error } = await db.from('supply_requests').insert([{
+      location_id: state.activeLocId, user_id: state.user.id,
+      supply_name: name, urgency: state.supplyUrgency,
+      notes: notes || null, status: 'open'
+    }]).select();
+    if (error) { alert('Could not submit request: ' + error.message); return; }
+    state.supplyRequests = await dbGetSupplyRequests(state.activeLocId);
+    state.supplyUrgency = 'low';
+    render();
+    // Brief success feedback
+    const btn = document.querySelector('.supply-form .btn');
+    if (btn) { btn.textContent = 'Submitted!'; btn.style.background = 'var(--green)'; setTimeout(() => { btn.textContent = 'Submit request'; btn.style.background = ''; }, 2000); }
+  } catch(e) {
+    console.error('Supply submit error:', e);
+    alert('Could not submit request. Check your connection and try again.');
+  }
 }
 
 async function updateSupplyStatus(id, status) {
