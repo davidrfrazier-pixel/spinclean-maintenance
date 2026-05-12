@@ -524,11 +524,6 @@ let state = {
 };
 
 // ─── HELPERS ───────────────────────────────────────────────────────────────
-function getInitials(name) {
-  if (!name) return '?';
-  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-}
-
 function formatTime(dt) {
   if (!dt) return '—';
   return new Date(dt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
@@ -557,11 +552,6 @@ function getWeekDates(offset = 0) {
     d.setDate(monday.getDate() + i);
     return d.toISOString().split('T')[0];
   });
-}
-
-function roleLabel(role) {
-  const map = { admin: 'Admin', manager: 'Manager', maintenance: 'Maintenance', attendant: 'Attendant' };
-  return map[role] || role;
 }
 
 function hasPerm(perm) {
@@ -1356,50 +1346,6 @@ function renderTeam() {
 }
 
 // ─── CHECKLIST ─────────────────────────────────────────────────────────────
-function renderChecklist() {
-  const tasks = state.checklists;
-  const done = tasks.filter(t => state.checkCompletions[t.id]?.completed).length;
-  const total = tasks.length;
-  const pct = total === 0 ? 100 : Math.round(done/total*100);
-
-  const categories = [...new Set(tasks.map(t => t.category || 'General'))];
-
-  return `
-    <div class="page-header">
-      <div class="page-title">Shift Checklist</div>
-    </div>
-    <div class="checklist-header">
-      <div class="checklist-title">Today's Tasks</div>
-      <div class="checklist-sub">${done} of ${total} completed</div>
-      <div class="checklist-progress"><div class="checklist-fill" style="width:${pct}%"></div></div>
-    </div>
-    ${total === 0
-      ? `<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">No tasks yet</div><div class="empty-sub">Your manager hasn't set up a checklist for this location yet.</div></div>`
-      : categories.map(cat => {
-          const catTasks = tasks.filter(t => (t.category || 'General') === cat);
-          return `
-            <div style="margin-bottom:16px;">
-              <div class="section-title" style="margin-bottom:10px;">${cat}</div>
-              ${catTasks.map(t => {
-                const comp = state.checkCompletions[t.id];
-                const isDone = !!comp?.completed;
-                return `
-                  <div class="check-item ${isDone ? 'done' : ''}">
-                    <div class="check-box ${isDone ? 'checked' : ''}" onclick="toggleCheckItem('${t.id}')"></div>
-                    <div class="check-body">
-                      <div class="check-task">${t.task_name}</div>
-                      <div class="check-cat">${cat}</div>
-                      ${t.photo_required ? '<div class="check-photo-required">📷 Photo required</div>' : ''}
-                      ${isDone && t.photo_required && !comp?.photo_url ? '<div class="check-photo-required">📷 Don\'t forget to add a photo!</div>' : ''}
-                    </div>
-                    ${isDone && t.photo_required ? `<button class="check-photo-btn" onclick="addCheckPhoto('${t.id}')">📷 ${comp?.photo_url ? 'View photo' : 'Add photo'}</button>` : ''}
-                  </div>`;
-              }).join('')}
-            </div>`;
-        }).join('')}
-  `;
-}
-
 // ─── TIMESHEETS ────────────────────────────────────────────────────────────
 function renderTimesheets() {
   const isAdmin = state.user?.role === 'admin' || state.user?.role === 'manager';
@@ -1557,26 +1503,6 @@ function getCurrentPosition() {
 }
 
 // ─── SUPPLY ACTIONS ────────────────────────────────────────────────────────
-function setSupplyUrgency(u) { state.supplyUrgency = u; render(); }
-
-async function submitSupplyRequest() {
-  const name = document.getElementById('supply-name')?.value?.trim();
-  const notes = document.getElementById('supply-notes')?.value?.trim();
-  if (!name) { alert('Please enter a supply name.'); return; }
-  const { data, error } = await dbSubmitSupplyRequest({
-    location_id: state.activeLocId,
-    user_id: state.user.id,
-    supply_name: name,
-    urgency: state.supplyUrgency,
-    notes: notes || null,
-    status: 'open',
-  });
-  if (error) { alert('Error submitting request: ' + error.message); return; }
-  state.supplyRequests = await dbGetSupplyRequests(state.activeLocId);
-  state.supplyUrgency = 'low';
-  render();
-}
-
 async function updateSupply(id, status) {
   await dbUpdateSupplyStatus(id, status, state.user.id, null);
   state.supplyRequests = await dbGetSupplyRequests(state.activeLocId);
@@ -1584,17 +1510,6 @@ async function updateSupply(id, status) {
 }
 
 // ─── CHECKLIST ACTIONS ─────────────────────────────────────────────────────
-function toggleCheckItem(templateId) {
-  const current = state.checkCompletions[templateId] || {};
-  state.checkCompletions[templateId] = { ...current, completed: !current.completed, completed_at: new Date().toISOString() };
-  render();
-}
-
-function addCheckPhoto(templateId) {
-  // In production this would open the camera/file picker and upload to Supabase Storage
-  alert('📷 Photo upload will open the camera in the installed PWA. This feature requires the app to be installed on your device.');
-}
-
 // ─── MODALS ────────────────────────────────────────────────────────────────
 function renderModal() {
   const root = document.getElementById('modal-root');
@@ -2151,72 +2066,6 @@ function renderTodo() {
 }
 
 // ─── Locations page ───────────────────────────────────────────────────────────
-function renderLocations() {
-  const locs = state.locations;
-
-  function initials(name) {
-    return name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  }
-
-  const cards = locs.map(loc => {
-    const ms = state.allMachines[loc.id] || [];
-    const loaded = ms.length > 0;
-    const flagged = ms.filter(m=>m.flagged).length;
-    const errors = ms.filter(m=>m.status==='error').length;
-    const overdue = ms.filter(m=>machineLastDays(m)>90).length;
-    const total = ms.length;
-
-    const statPills = loaded ? `
-      <span class="loc-stat">${total} machine${total!==1?'s':''}</span>
-      ${flagged>0?`<span class="loc-stat danger">${flagged} flagged</span>`:''}
-      ${errors>0?`<span class="loc-stat danger">${errors} error${errors!==1?'s':''}</span>`:''}
-      ${overdue>0?`<span class="loc-stat warn">${overdue} overdue</span>`:''}
-      ${flagged===0&&errors===0&&overdue===0?`<span class="loc-stat">All clear</span>`:''}
-    ` : `<span class="loc-stat" style="cursor:pointer;" onclick="loadLocStats('${loc.id}')">Load stats</span>`;
-
-    const addrLine = [loc.address, loc.city, loc.state, loc.zip].filter(Boolean).join(', ');
-    const phone = loc.phone ? `<div style="font-size:12px;color:var(--text2);margin-top:3px;">${loc.phone}</div>` : '';
-    const manager = loc.manager ? `<div style="font-size:12px;color:var(--text2);margin-top:2px;">Manager: ${loc.manager}</div>` : '';
-    const hours = (loc.hours_open||loc.hours_close) ? `<div style="font-size:12px;color:var(--text2);margin-top:2px;">Hours: ${loc.hours_open||'—'} – ${loc.hours_close||'—'}</div>` : '';
-
-    return `
-      <div class="loc-card">
-        <div class="loc-card-header">
-          <div class="loc-initials">${initials(loc.name)}</div>
-          <div style="flex:1;min-width:0;">
-            <div class="loc-card-name">${loc.name}</div>
-            ${addrLine?`<div class="loc-card-address">${addrLine}</div>`:''}
-            ${phone}${manager}${hours}
-          </div>
-        </div>
-        <div class="loc-card-stats">${statPills}</div>
-        <div class="loc-card-actions">
-          <button class="loc-edit-btn" onclick="openLocModal('${loc.id}')">Edit</button>
-          <button class="loc-view-btn" onclick="goLocFromCard('${loc.id}')">View machines →</button>
-        </div>
-      </div>`;
-  }).join('');
-
-  const emptyState = locs.length === 0 ? `
-    <div class="empty-dashed" style="margin-bottom:20px;">
-      No locations yet. Add your first location to get started.
-    </div>` : '';
-
-  return `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <div>
-        <div style="font-size:16px;font-weight:500;">Locations</div>
-        <div style="font-size:12px;color:var(--text2);margin-top:2px;">${locs.length} location${locs.length!==1?'s':''} in your network</div>
-      </div>
-      <button class="btn primary" onclick="openLocModal(null)">+ Add location</button>
-    </div>
-
-    ${emptyState}
-    <div class="loc-cards">${cards}</div>
-
-  `;
-}
-
 async function loadLocStats(locId) {
   if(!state.allMachines[locId]) {
     const ms = await loadMachines(locId);
@@ -2233,148 +2082,6 @@ function goLocFromCard(locId) {
 }
 
 // ─── Location modal ───────────────────────────────────────────────────────────
-function openLocModal(locId) {
-  state.editingLocId = locId;
-  const modal = document.getElementById('loc-modal');
-  const titleEl = document.getElementById('loc-modal-title-text');
-  const deleteZone = document.getElementById('loc-delete-zone');
-  const errEl = document.getElementById('loc-form-error');
-  errEl.style.display = 'none';
-
-  // Clear all fields first
-  ['lf-name','lf-code','lf-address','lf-city','lf-state','lf-zip','lf-phone','lf-manager','lf-email','lf-open','lf-close','lf-notes'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.value = '';
-  });
-  ['lf-name-err','lf-address-err','lf-city-err'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.style.display = 'none';
-  });
-
-  if(locId) {
-    const loc = state.locations.find(l=>l.id===locId);
-    titleEl.textContent = `Edit location — ${loc?.name||''}`;
-    deleteZone.style.display = 'block';
-    if(loc) {
-      document.getElementById('lf-name').value = loc.name||'';
-      document.getElementById('lf-code').value = loc.code||'';
-      document.getElementById('lf-address').value = loc.address||'';
-      document.getElementById('lf-city').value = loc.city||'';
-      document.getElementById('lf-state').value = loc.state||'';
-      document.getElementById('lf-zip').value = loc.zip||'';
-      document.getElementById('lf-phone').value = loc.phone||'';
-      document.getElementById('lf-manager').value = loc.manager||'';
-      document.getElementById('lf-email').value = loc.email||'';
-      document.getElementById('lf-open').value = loc.hours_open||'';
-      document.getElementById('lf-close').value = loc.hours_close||'';
-      document.getElementById('lf-notes').value = loc.notes||'';
-    }
-  } else {
-    titleEl.textContent = 'Add location';
-    deleteZone.style.display = 'none';
-  }
-  modal.style.display = 'flex';
-}
-
-function closeLocModal() {
-  document.getElementById('loc-modal').style.display = 'none';
-  state.editingLocId = null;
-}
-
-function getLocFormValues() {
-  const g = id => (document.getElementById(id)||{}).value||'';
-  return {
-    name:        g('lf-name').trim(),
-    code:        g('lf-code').trim().toUpperCase()||null,
-    address:     g('lf-address').trim(),
-    city:        g('lf-city').trim(),
-    state:       g('lf-state').trim().toUpperCase()||null,
-    zip:         g('lf-zip').trim()||null,
-    phone:       g('lf-phone').trim()||null,
-    manager:     g('lf-manager').trim()||null,
-    email:       g('lf-email').trim()||null,
-    hours_open:  g('lf-open').trim()||null,
-    hours_close: g('lf-close').trim()||null,
-    notes:       g('lf-notes').trim()||null,
-  };
-}
-
-async function saveLocation() {
-  const f = getLocFormValues();
-  let valid = true;
-
-  // Validate required fields
-  const nameErr = document.getElementById('lf-name-err');
-  const addrErr = document.getElementById('lf-address-err');
-  const cityErr = document.getElementById('lf-city-err');
-  const formErr = document.getElementById('loc-form-error');
-
-  if(!f.name) {
-    nameErr.textContent = 'Location name is required'; nameErr.style.display='block'; valid=false;
-  } else { nameErr.style.display='none'; }
-
-  if(!f.address) {
-    addrErr.textContent = 'Street address is required'; addrErr.style.display='block'; valid=false;
-  } else { addrErr.style.display='none'; }
-
-  if(!f.city) {
-    cityErr.textContent = 'City is required'; cityErr.style.display='block'; valid=false;
-  } else { cityErr.style.display='none'; }
-
-  if(!valid) return;
-
-  const saveBtn = document.getElementById('loc-save-btn');
-  saveBtn.disabled = true;
-  saveBtn.textContent = 'Saving…';
-  formErr.style.display = 'none';
-
-  if(state.editingLocId) {
-    const {data, error} = await updateLocation(state.editingLocId, f);
-    if(error) {
-      formErr.textContent = 'Error saving: ' + error.message;
-      formErr.style.display = 'block';
-      saveBtn.disabled=false; saveBtn.textContent='Save location'; return;
-    }
-    const idx = state.locations.findIndex(l=>l.id===state.editingLocId);
-    if(idx>=0) state.locations[idx] = {...state.locations[idx], ...f};
-  } else {
-    const {data, error} = await insertLocation(f);
-    if(error) {
-      formErr.textContent = 'Error saving: ' + error.message;
-      formErr.style.display = 'block';
-      saveBtn.disabled=false; saveBtn.textContent='Save location'; return;
-    }
-    if(data) {
-      state.locations.push(data);
-      state.allMachines[data.id] = [];
-    }
-  }
-
-  saveBtn.disabled = false;
-  saveBtn.textContent = 'Save location';
-  closeLocModal();
-  render();
-}
-
-async function deleteLocation() {
-  const locId = state.editingLocId;
-  if(!locId) return;
-  const loc = state.locations.find(l=>l.id===locId);
-  if(!confirm(`Remove "${loc?.name||'this location'}"? Machines assigned to it will remain in the database.`)) return;
-
-  const error = await deleteLocationDB(locId);
-  if(error) { alert('Error removing location: '+error.message); return; }
-  state.locations = state.locations.filter(l=>l.id!==locId);
-  delete state.allMachines[locId];
-  if(state.activeLocId===locId) {
-    state.activeLocId = state.locations[0]?.id||null;
-    if(state.activeLocId) await switchLocation(state.activeLocId, false);
-  }
-  closeLocModal();
-  render();
-}
-
-
 // --- CSV Bulk Upload ---
 const CSV_COLS=['machine_id','type','group_name','brand','model','serial_number','capacity','manufactured_year','install_year','software_version','status','vendor','purchase_price','last_service_date','notes'];
 const CSV_REQUIRED=['machine_id','type','group_name','brand','model'];
@@ -2558,8 +2265,7 @@ function downloadTemplate(){
 // ─── Add Machine ──────────────────────────────────────────────────────────────
 const washerModels=['Speed Queen TR7000WN','Speed Queen TR5000WN','Maytag MHN33PDCWW','Maytag MHN30PREWW','UniMac UF35PVQS','UniMac UF50PVQS','Alliance FS0130CNVSP','Huebsch HUCNASP','Other'];
 const dryerModels=['Speed Queen DR7000WG','Speed Queen DR5000WG','Maytag MDG25PNCWW','Maytag MDG18PDAWW','UniMac UT050PVQS','UniMac UT075PVQS','Alliance FT020ECVSP','Huebsch HDENASP','Other'];
-const currentYear=2026;
-const years=Array.from({length:currentYear-1999},(_, i)=>currentYear-i);
+const years=Array.from({length:currentYear()-1999},(_, i)=>currentYear()-i);
 
 function renderAddMachine() {
   const errs = state.addMachineErrors;
