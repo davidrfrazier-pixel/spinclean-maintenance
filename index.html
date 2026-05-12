@@ -722,7 +722,7 @@ async function afterLogin() {
   }
   const wd = getWeekDates(state.weekOffset);
   if (state.activeLocId) state.shifts = await dbGetShifts(state.activeLocId, wd[0], wd[6]);
-  state.timeclock = await dbActiveClockIn(state.user.id);
+  state.timeclock = await dbGetActiveClockIn(state.user.id);
   state.hrDocuments = await dbGetHRDocuments();
   state.tab = 'dashboard';
   startClockTicker();
