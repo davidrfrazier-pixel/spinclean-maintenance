@@ -516,6 +516,9 @@ let state = {
   tab: 'home', loading: true,
   // Messaging
   messages: [], messageChanLocId: null,
+  msgRecipientType: 'location', msgRecipientId: null,
+  msgRecipientPickerOpen: false,
+  notifCount: 0,
   // Schedule
   shifts: [], weekOffset: 0,
   // Clock
@@ -600,9 +603,45 @@ async function dbGetMessages(locId) {
   const { data } = await db.from('messages').select('*, users(name, role)').eq('location_id', locId).order('created_at', { ascending: false }).limit(50);
   return data || [];
 }
-async function dbSendMessage(locId, userId, body, isMaintFlag) {
-  const { data, error } = await db.from('messages').insert([{ location_id: locId, user_id: userId, body, is_maintenance_flag: isMaintFlag }]);
+async function dbSendMessage(locId, userId, body, isMaintFlag, recipientType, recipientId) {
+  const rec = { location_id: locId, user_id: userId, body, is_maintenance_flag: isMaintFlag };
+  if (recipientType && recipientType !== 'location') {
+    rec.recipient_type = recipientType;
+    rec.recipient_id = recipientId;
+  }
+  const { data, error } = await db.from('messages').insert([rec]);
   return { data, error };
+}
+function getVisibleMessages(messages) {
+  const userId = state.user?.id;
+  const role = state.user?.role;
+  return messages.filter(m => {
+    const rt = m.recipient_type || 'location';
+    if (rt === 'location') return true;
+    if (rt === 'role' && m.recipient_id === role) return true;
+    if (rt === 'dm' && (m.recipient_id === userId || m.user_id === userId)) return true;
+    return false;
+  });
+}
+async function dbMarkMessagesRead(messages, userId) {
+  const unread = messages.filter(m => {
+    const rb = m.read_by || [];
+    return !rb.includes(userId) && m.user_id !== userId;
+  });
+  for (const m of unread) {
+    const newReadBy = [...(m.read_by || []), userId];
+    m.read_by = newReadBy;
+    db.from('messages').update({ read_by: newReadBy }).eq('id', m.id).then(() => {});
+  }
+}
+function getUnreadCount(messages) {
+  const userId = state.user?.id;
+  if (!userId) return 0;
+  const visible = getVisibleMessages(messages);
+  return visible.filter(m => {
+    const readBy = m.read_by || [];
+    return !readBy.includes(userId) && m.user_id !== userId;
+  }).length;
 }
 async function dbGetShifts(locId, dateFrom, dateTo) {
   const { data } = await db.from('shifts').select('*, users(name, role)').eq('location_id', locId).gte('shift_date', dateFrom).lte('shift_date', dateTo).order('start_time');
@@ -739,6 +778,9 @@ async function afterLogin() {
     state.shifts = shifts;
     state.timeclock = timeclock;
     state.hrDocuments = hrDocs;
+    state.notifCount = getUnreadCount(getVisibleMessages(messages));
+    // Preload employees for message recipient picker
+    dbGetEmployees().then(e => { state.employees = e; });
   } else {
     const [timeclock, hrDocs] = await Promise.all([
       dbGetActiveClockIn(state.user.id),
@@ -972,6 +1014,7 @@ function renderTopbar() {
 
 function renderSidebar(tabs, active) {
   const alerts = state.supplyRequests.filter(r => r.status === 'open').length;
+  const unreadMsgs = state.notifCount || 0;
   return `
     <div class="sidebar">
       <div class="sidebar-section">
@@ -981,6 +1024,7 @@ function renderSidebar(tabs, active) {
             <span class="sidebar-item-icon">${t.icon}</span>
             ${t.label}
             ${t.id === 'supplies' && alerts > 0 ? `<span class="sidebar-badge">${alerts}</span>` : ''}
+            ${t.id === 'messages' && unreadMsgs > 0 ? `<span class="sidebar-badge" style="background:var(--blue);">${unreadMsgs}</span>` : ''}
           </button>`).join('')}
       </div>
       <div class="sidebar-logout">
@@ -993,6 +1037,7 @@ function renderSidebar(tabs, active) {
 
 function renderBottomNav(tabs, active) {
   const alerts = state.supplyRequests.filter(r => r.status === 'open').length;
+  const unreadMsgs = state.notifCount || 0;
   const role = state.user?.role;
   // On mobile, show first 4 tabs + a "More" tab for admin/manager to access Team/HR
   const primary = tabs.slice(0, 4);
@@ -1005,6 +1050,7 @@ function renderBottomNav(tabs, active) {
       ${primary.map(t => `
         <button class="bnav-item ${active === t.id ? 'active' : ''}" onclick="goTab('${t.id}')">
           ${t.id === 'supplies' && alerts > 0 ? `<div class="bnav-badge">${alerts}</div>` : ''}
+          ${t.id === 'messages' && unreadMsgs > 0 ? `<div class="bnav-badge" style="background:var(--blue);">${unreadMsgs}</div>` : ''}
           <div class="bnav-icon">${t.icon}</div>
           <div class="bnav-label">${t.label}</div>
         </button>`).join('')}
@@ -1242,9 +1288,50 @@ function renderSchedule() {
 }
 
 // ─── MESSAGES ──────────────────────────────────────────────────────────────
+function getRecipientLabel() {
+  const rt = state.msgRecipientType;
+  if (rt === 'role') {
+    const labels = { admin: 'All Admins', manager: 'All Managers', maintenance: 'All Maintenance', attendant: 'All Attendants' };
+    return labels[state.msgRecipientId] || 'Role';
+  }
+  if (rt === 'dm') {
+    const emp = state.employees.find(e => e.id === state.msgRecipientId);
+    return emp ? emp.name : 'Direct Message';
+  }
+  const loc = state.myLocations.find(l => l.id === state.messageChanLocId);
+  return loc ? loc.name + ' (everyone)' : 'Location';
+}
+
+function msgRecipientTag(m) {
+  const rt = m.recipient_type || 'location';
+  if (rt === 'role') {
+    const labels = { admin: 'Admins', manager: 'Managers', maintenance: 'Maintenance', attendant: 'Attendants' };
+    return '<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#EEF2FF;color:#4338CA;font-weight:600;margin-left:6px;">→ ' + (labels[m.recipient_id] || m.recipient_id) + '</span>';
+  }
+  if (rt === 'dm') {
+    const isSender = m.user_id === state.user?.id;
+    const otherName = isSender ? (state.employees.find(e => e.id === m.recipient_id)?.name || 'User') : (m.users?.name || 'Unknown');
+    return '<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#FDF4FF;color:#7E22CE;font-weight:600;margin-left:6px;">DM' + (isSender ? ' → ' + otherName : '') + '</span>';
+  }
+  return '';
+}
+
 function renderMessages() {
   const canSwitchChannels = state.user?.role === 'admin' || state.user?.role === 'manager';
-  const msgs = [...state.messages].reverse();
+  const visible = getVisibleMessages(state.messages);
+  const msgs = [...visible].reverse();
+
+  // Build recipient picker options
+  const locOptions = state.myLocations.map(l =>
+    '<option value="location:' + l.id + '"' + (state.msgRecipientType === 'location' && state.messageChanLocId === l.id ? ' selected' : '') + '>' + l.name + ' (everyone)</option>'
+  ).join('');
+  const roleOptions = ['admin','manager','maintenance','attendant'].map(r =>
+    '<option value="role:' + r + '"' + (state.msgRecipientType === 'role' && state.msgRecipientId === r ? ' selected' : '') + '>All ' + r.charAt(0).toUpperCase() + r.slice(1) + 's</option>'
+  ).join('');
+  const locEmployees = state.employees.filter(e => e.id !== state.user?.id);
+  const dmOptions = locEmployees.map(e =>
+    '<option value="dm:' + e.id + '"' + (state.msgRecipientType === 'dm' && state.msgRecipientId === e.id ? ' selected' : '') + '>' + e.name + ' (' + e.role + ')</option>'
+  ).join('');
 
   return `
     <div class="page-header">
@@ -1263,16 +1350,26 @@ function renderMessages() {
           ? '<div class="empty-state" style="padding:20px 0;"><div class="empty-sub">No messages yet. Start the conversation!</div></div>'
           : msgs.map(m => `
             <div class="msg-item">
-              <div class="msg-avatar" style="background:${m.is_maintenance_flag ? 'var(--red)' : 'var(--navy)'};">${getInitials(m.users?.name)}</div>
+              <div class="msg-avatar" style="background:${m.is_maintenance_flag ? 'var(--red)' : m.recipient_type === 'dm' ? '#7E22CE' : 'var(--navy)'};">${getInitials(m.users?.name)}</div>
               <div class="msg-body">
                 ${m.is_maintenance_flag ? '<div class="msg-maintenance-tag">' + ICONS.alertTri + ' Maintenance Issue</div>' : ''}
                 <div class="msg-header">
-                  <div class="msg-name">${m.users?.name || 'Unknown'}</div>
+                  <div class="msg-name">${m.users?.name || 'Unknown'}${msgRecipientTag(m)}</div>
                   <div class="msg-time">${new Date(m.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true})}</div>
                 </div>
                 <div class="msg-text">${m.body}</div>
               </div>
             </div>`).join('')}
+      </div>
+      <div style="padding:8px 12px 0;border-top:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;">To:</span>
+          <select id="msg-recipient-select" onchange="setMsgRecipient(this.value)" style="flex:1;font-size:13px;padding:5px 8px;border-radius:8px;border:1.5px solid var(--border2);font-family:inherit;background:var(--bg);color:var(--text);">
+            <optgroup label="Location Channels">${locOptions}</optgroup>
+            <optgroup label="Role Groups">${roleOptions}</optgroup>
+            ${dmOptions ? '<optgroup label="Direct Messages">' + dmOptions + '</optgroup>' : ''}
+          </select>
+        </div>
       </div>
       <div class="msg-input-row">
         <input class="msg-input" id="msg-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMessage(false)"/>
@@ -1469,8 +1566,15 @@ async function goTab(tab) {
   if (tab === 'schedule') { const wd = getWeekDates(state.weekOffset); state.shifts = await dbGetShifts(state.activeLocId, wd[0], wd[6]); }
   if (['machines','alerts','todo','log','dashboard'].includes(tab) && state.activeLocId) {
     if (!state.allMachines[state.activeLocId]) state.allMachines[state.activeLocId] = await loadMachines(state.activeLocId) || [];
-    // Only reload log for the log tab (fresh data needed) or if log is empty
     if (tab === 'log' || state.log.length === 0) state.log = await loadLog(state.activeLocId);
+  }
+  if (tab === 'messages') {
+    // Refresh messages and mark visible ones as read
+    state.messages = await dbGetMessages(state.messageChanLocId || state.activeLocId);
+    if (state.employees.length === 0) dbGetEmployees().then(e => { state.employees = e; render(); });
+    const visible = getVisibleMessages(state.messages);
+    dbMarkMessagesRead(visible, state.user.id);
+    state.notifCount = 0;
   }
   render();
 }
@@ -1484,8 +1588,28 @@ async function changeWeek(dir) {
 
 async function switchMessageChan(locId) {
   state.messageChanLocId = locId;
+  state.msgRecipientType = 'location';
+  state.msgRecipientId = null;
   state.messages = await dbGetMessages(locId);
+  const visible = getVisibleMessages(state.messages);
+  dbMarkMessagesRead(visible, state.user.id);
+  state.notifCount = 0;
   render();
+}
+
+function setMsgRecipient(val) {
+  const [type, ...rest] = val.split(':');
+  const id = rest.join(':');
+  state.msgRecipientType = type;
+  if (type === 'location') {
+    state.msgRecipientId = null;
+    if (id !== state.messageChanLocId) {
+      switchMessageChan(id);
+      return;
+    }
+  } else {
+    state.msgRecipientId = id;
+  }
 }
 
 async function sendMessage(isMaintFlag) {
@@ -1494,9 +1618,12 @@ async function sendMessage(isMaintFlag) {
   if (!body) return;
   if (!state.messageChanLocId) return;
   input.value = '';
-  const { error } = await dbSendMessage(state.messageChanLocId, state.user.id, body, isMaintFlag);
+  const rt = state.msgRecipientType || 'location';
+  const rid = rt === 'location' ? null : state.msgRecipientId;
+  const { error } = await dbSendMessage(state.messageChanLocId, state.user.id, body, isMaintFlag, rt, rid);
   if (!error) {
     state.messages = await dbGetMessages(state.messageChanLocId);
+    state.notifCount = getUnreadCount(getVisibleMessages(state.messages));
     render();
     // Scroll to bottom
     setTimeout(() => {
@@ -1961,12 +2088,35 @@ function renderDashboard() {
       ${ms.length>20?`<div class="dot-m" style="background:var(--bg2);color:var(--text2);border-color:var(--border)" onclick="goTab('machines')">+${ms.length-20}</div>`:''}
     </div>`;
 
+  // Supply alert card for admin/manager
+  const isAdminDash = state.user?.role === 'admin' || state.user?.role === 'manager';
+  const openSupplies = state.supplyRequests.filter(r => r.status === 'open');
+  const urgentCount = openSupplies.filter(r => r.urgency === 'urgent').length;
+  const mediumCount = openSupplies.filter(r => r.urgency === 'medium').length;
+  const lowCount = openSupplies.filter(r => r.urgency === 'low').length;
+
+  const supplyAlertCard = (isAdminDash && openSupplies.length > 0) ? `
+    <div class="card" style="margin-bottom:16px;border-left:4px solid ${urgentCount > 0 ? 'var(--red)' : 'var(--amber)'};padding:14px 16px;cursor:pointer;" onclick="goTab('supplies')">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:var(--navy);">
+          ${ICONS.box} Supply Requests (${openSupplies.length} open)
+        </div>
+        <span style="font-size:12px;color:var(--blue);font-weight:600;">View all →</span>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        ${urgentCount > 0 ? `<span style="font-size:12px;padding:3px 10px;border-radius:99px;background:#FEE2E2;color:#991B1B;font-weight:600;">${urgentCount} urgent</span>` : ''}
+        ${mediumCount > 0 ? `<span style="font-size:12px;padding:3px 10px;border-radius:99px;background:var(--amber-bg);color:var(--amber-text);font-weight:600;">${mediumCount} medium</span>` : ''}
+        ${lowCount > 0 ? `<span style="font-size:12px;padding:3px 10px;border-radius:99px;background:#DBEAFE;color:#1E40AF;font-weight:600;">${lowCount} low</span>` : ''}
+      </div>
+    </div>` : '';
+
   return `
     <div class="page-header" style="margin-bottom:16px;">
       <div class="page-title">${greet}, ${state.user?.name?.split(' ')[0] || ''}!</div>
       <div class="page-sub">${loc ? loc.name + ' · ' : ''}${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>
     </div>
     ${renderClockWidget()}
+    ${supplyAlertCard}
     <div class="metric-grid">
       ${metrics.map(m=>`
         <div class="metric-card ${qf===m.key?'active-filter':''}" onclick="setDashFilter('${m.key}')">
