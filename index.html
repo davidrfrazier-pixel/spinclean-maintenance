@@ -1569,10 +1569,15 @@ function showEmployeeDetail(empId) {
   const emp = state.employees.find(e => e.id === empId);
   if (!emp) return;
   const locs = emp.user_locations?.map(ul => ul.locations?.name).filter(Boolean).join(', ') || 'None';
+  const isOwnProfile = emp.id === state.user?.id;
+  const canEdit = state.user?.role === 'admin' || state.user?.role === 'manager' || isOwnProfile;
+  const avHtml = emp.avatar_url
+    ? `<img src="${emp.avatar_url}" alt="${emp.name}" style="width:100%;height:100%;object-fit:cover;"/>`
+    : getInitials(emp.name);
   state.modalContent = `
     <div class="modal-title">
       <div style="display:flex;align-items:center;gap:12px;">
-        <div class="emp-avatar" style="width:44px;height:44px;">${getInitials(emp.name)}</div>
+        <div class="emp-avatar" style="width:52px;height:52px;font-size:18px;">${avHtml}</div>
         <div>
           <div style="font-size:17px;font-weight:700;color:var(--navy);">${emp.name}</div>
           <span class="emp-role-badge role-${emp.role}">${roleLabel(emp.role)}</span>
@@ -1585,10 +1590,92 @@ function showEmployeeDetail(empId) {
       <div style="display:flex;gap:10px;"><span style="font-size:12px;font-weight:600;color:var(--text2);width:80px;">Locations</span><span style="font-size:13px;">${locs}</span></div>
       <div style="display:flex;gap:10px;"><span style="font-size:12px;font-weight:600;color:var(--text2);width:80px;">Joined</span><span style="font-size:13px;">${new Date(emp.created_at).toLocaleDateString()}</span></div>
     </div>
-    <div style="display:flex;gap:10px;justify-content:flex-end;">
+    <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
       <button class="btn" onclick="closeModal()">Close</button>
+      ${canEdit ? `<button class="btn primary" onclick="showEditEmployee('${emp.id}')">✏️ Edit profile</button>` : ''}
     </div>`;
   renderModal();
+}
+
+function showEditEmployee(empId) {
+  const emp = state.employees.find(e => e.id === empId);
+  if (!emp) return;
+  const isOwnProfile = emp.id === state.user?.id;
+  const isAdmin = state.user?.role === 'admin';
+  const locOpts = state.locations.map(l => {
+    const assigned = emp.user_locations?.some(ul => ul.locations?.name === l.name);
+    return `<option value="${l.id}" ${assigned ? 'selected' : ''}>${l.name}</option>`;
+  }).join('');
+  const avHtml = emp.avatar_url
+    ? `<img src="${emp.avatar_url}" alt="${emp.name}" style="width:100%;height:100%;object-fit:cover;"/>`
+    : `<span style="font-size:22px;font-weight:700;">${getInitials(emp.name)}</span>`;
+  state.modalContent = `
+    <div class="modal-title">Edit ${isOwnProfile ? 'My Profile' : emp.name}</div>
+    <div style="text-align:center;margin-bottom:18px;">
+      <div style="position:relative;width:72px;height:72px;margin:0 auto 8px;">
+        <div style="width:72px;height:72px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid #fff;box-shadow:var(--shadow-md);">${avHtml}</div>
+        ${isOwnProfile ? `<div onclick="document.getElementById('edit-avatar-upload').click()" style="position:absolute;bottom:0;right:0;width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;border:2px solid #fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;">✏️</div>` : ''}
+      </div>
+      ${isOwnProfile ? `<input type="file" id="edit-avatar-upload" accept="image/*" style="display:none;" onchange="handleProfileUpload(event)"/>
+      <div style="font-size:11px;color:var(--text2);">Tap pencil to change photo</div>` : ''}
+    </div>
+    <div class="field"><label>Full name <span class="req">*</span></label>
+      <input id="edit-emp-name" value="${emp.name}" placeholder="Full name"/>
+    </div>
+    <div class="field"><label>Email</label>
+      <input value="${emp.email}" disabled style="opacity:.5;cursor:not-allowed;background:var(--bg);"/>
+      <div class="field-hint">Email cannot be changed here.</div>
+    </div>
+    <div class="field"><label>Phone</label>
+      <input id="edit-emp-phone" value="${emp.phone || ''}" placeholder="(555) 000-0000" type="tel"/>
+    </div>
+    ${isAdmin ? `
+    <div class="field"><label>Role</label>
+      <select id="edit-emp-role">
+        <option value="attendant" ${emp.role==='attendant'?'selected':''}>Attendant</option>
+        <option value="maintenance" ${emp.role==='maintenance'?'selected':''}>Maintenance</option>
+        <option value="manager" ${emp.role==='manager'?'selected':''}>Manager</option>
+        <option value="admin" ${emp.role==='admin'?'selected':''}>Admin</option>
+      </select>
+    </div>
+    <div class="field"><label>Assigned location</label>
+      <select id="edit-emp-loc"><option value="">Select location...</option>${locOpts}</select>
+    </div>` : ''}
+    <div id="edit-emp-error" class="alert error" style="display:none;margin-top:8px;"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">
+      <button class="btn" onclick="showEmployeeDetail('${emp.id}')">Cancel</button>
+      <button class="btn primary" onclick="saveEmployeeEdit('${emp.id}')">Save changes</button>
+    </div>`;
+  renderModal();
+}
+
+async function saveEmployeeEdit(empId) {
+  const name = document.getElementById('edit-emp-name')?.value?.trim();
+  const phone = document.getElementById('edit-emp-phone')?.value?.trim();
+  const role = document.getElementById('edit-emp-role')?.value;
+  const locId = document.getElementById('edit-emp-loc')?.value;
+  const errEl = document.getElementById('edit-emp-error');
+  if (!name) { errEl.textContent = 'Name is required.'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  const btn = document.querySelector('#modal-inner .btn.primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+  const updates = { name, phone: phone || null };
+  if (role) updates.role = role;
+  const { error } = await db.from('users').update(updates).eq('id', empId);
+  if (error) { errEl.textContent = 'Error: ' + error.message; errEl.style.display = 'block'; if (btn) { btn.disabled = false; btn.textContent = 'Save changes'; } return; }
+  // Update location assignment if admin changed it
+  if (locId) {
+    await db.from('user_locations').delete().eq('user_id', empId);
+    await db.from('user_locations').insert([{ user_id: empId, location_id: locId }]);
+  }
+  // Update local state
+  const emp = state.employees.find(e => e.id === empId);
+  if (emp) { emp.name = name; emp.phone = phone || null; if (role) emp.role = role; }
+  if (empId === state.user?.id) { state.user.name = name; state.user.phone = phone || null; if (role) state.user.role = role; }
+  // Reload employees to get fresh location data
+  state.employees = await dbGetEmployees();
+  showEmployeeDetail(empId);
+  render();
 }
 
 async function saveEmployee() {
