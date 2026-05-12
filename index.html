@@ -681,26 +681,34 @@ async function dbGetHRDocuments() {
 
 // ─── INIT ──────────────────────────────────────────────────────────────────
 async function init() {
-  // Try restoring session
-  const saved = loadSession();
-  if (saved) {
-    const { data } = await dbGetUser(saved.email);
-    if (data) {
-      state.user = data;
-      await afterLogin();
-      hideSplash();
-      return;
+  try {
+    const saved = loadSession();
+    if (saved) {
+      const { data } = await dbGetUser(saved.email);
+      if (data) {
+        state.user = data;
+        await afterLogin();
+        hideSplash();
+        return;
+      }
     }
+    hideSplash();
+    renderLogin();
+  } catch(err) {
+    console.error('INIT ERROR:', err);
+    document.getElementById('splash').innerHTML = '<div style="color:#fff;padding:40px;text-align:center;font-family:sans-serif;"><div style="font-size:18px;font-weight:700;margin-bottom:12px;">Error loading app</div><div style="font-size:13px;opacity:.8;margin-bottom:20px;">' + err.message + '</div><div style="font-size:11px;opacity:.6;">Check browser console for details</div></div>';
   }
-  hideSplash();
-  renderLogin();
 }
 
 function hideSplash() {
   setTimeout(() => {
-    const splash = document.getElementById('splash');
-    if (splash) { splash.style.opacity = '0'; splash.style.transition = 'opacity .4s'; setTimeout(() => splash.remove(), 400); }
-    document.getElementById('root').style.display = 'block';
+    try {
+      const splash = document.getElementById('splash');
+      if (splash) { splash.style.opacity = '0'; splash.style.transition = 'opacity .4s'; setTimeout(() => splash.remove(), 400); }
+      const root = document.getElementById('root');
+      if (root) root.style.display = 'block';
+      else console.error('FATAL: #root element not found');
+    } catch(e) { console.error('hideSplash error:', e); }
   }, 800);
 }
 
@@ -3031,6 +3039,64 @@ async function updateSupplyStatus(id, status) {
   }).eq('id', id);
   state.supplyRequests = await dbGetSupplyRequests(state.activeLocId);
   render();
+}
+
+
+// ─── Missing helper functions ──────────────────────────────────────────────
+
+function getAlerts(machines) {
+  const a = [];
+  machines.forEach(m => {
+    const d = daysSince(m.last_service_date);
+    if (m.flagged) a.push({type:'danger', text:`Machine ${m.machine_id} flagged: ${m.issue_count||0} recurring issues`, sub:m.model, mid:m.id});
+    else if (m.status==='error') a.push({type:'danger', text:`Machine ${m.machine_id} reporting an error`, sub:m.model, mid:m.id});
+    else if (d>120) a.push({type:'warn', text:`Machine ${m.machine_id} overdue for maintenance (${d}d)`, sub:m.model, mid:m.id});
+    else if (d>90) a.push({type:'info', text:`Machine ${m.machine_id} approaching service interval (${d}d)`, sub:m.model, mid:m.id});
+  });
+  return a.slice(0, 8);
+}
+
+function buildTodos(machines) {
+  const items = [];
+  machines.forEach(m => {
+    const d = daysSince(m.last_service_date);
+    const age = m.install_year ? currentYear() - m.install_year : 0;
+    if (m.flagged) items.push({key:`flag-${m.id}`, mid:m.id, priority:'critical', task:'Flagged machine — inspect & assess', detail:`${m.issue_count||0} recurring issues`, meta:m.type+' · '+m.model});
+    if (m.status==='error' && !m.flagged) items.push({key:`err-${m.id}`, mid:m.id, priority:'critical', task:'Error reported — diagnose & repair', detail:'Machine reporting active error', meta:m.type+' · '+m.model});
+    if (d>120 && !m.flagged && m.status!=='error') items.push({key:`over-${m.id}`, mid:m.id, priority:'high', task:'Overdue maintenance', detail:`${d} days since last service`, meta:m.type+' · '+m.model});
+    else if (d>90 && !m.flagged && m.status!=='error') items.push({key:`due-${m.id}`, mid:m.id, priority:'high', task:'Routine maintenance due', detail:`${d} days since last service`, meta:m.type+' · '+m.model});
+    if (age>=8 && d>60 && !m.flagged) items.push({key:`age-${m.id}`, mid:m.id, priority:'routine', task:'Aged machine check', detail:`Machine is ${age} years old`, meta:m.type+' · '+m.model});
+  });
+  const seen = new Set();
+  return items.filter(it => { const k=it.mid+it.priority; if(seen.has(k)) return false; seen.add(k); return true; })
+    .sort((a,b) => ({critical:0,high:1,routine:2}[a.priority] - {critical:0,high:1,routine:2}[b.priority]));
+}
+
+async function deleteLocationDB(id) {
+  const { error } = await db.from('locations').delete().eq('id', id);
+  return error;
+}
+
+async function updateLocation(id, rec) {
+  const { data, error } = await db.from('locations').update(rec).eq('id', id).select().single();
+  return { data, error };
+}
+
+async function switchLocation(locId, doRender=true) {
+  state.activeLocId = locId;
+  state.selectedMachineId = null;
+  state.dashFilter = null;
+  if (!state.allMachines[locId]) {
+    state.allMachines[locId] = await loadMachines(locId) || [];
+  }
+  state.log = await loadLog(locId);
+  state.messages = await dbGetMessages(locId);
+  state.messageChanLocId = locId;
+  state.supplyRequests = await dbGetSupplyRequests(locId);
+  state.checklists = await dbGetChecklistTemplates(locId);
+  const wd = getWeekDates(state.weekOffset);
+  state.shifts = await dbGetShifts(locId, wd[0], wd[6]);
+  if (doRender) render();
 }
 
 window.addEventListener('resize', () => { if (state.user) render(); });
