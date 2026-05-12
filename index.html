@@ -3207,7 +3207,12 @@ async function logMaintEntry(machineId) {
 
 
 // ─── Supply actions ────────────────────────────────────────────────────────
-function setSupplyUrgency(u) { state.supplyUrgency = u; render(); }
+function setSupplyUrgency(u) {
+  state.supplyUrgency = u;
+  document.querySelectorAll('.urgency-chip').forEach(el => {
+    el.classList.toggle('selected', el.textContent.trim().toLowerCase() === u);
+  });
+}
 
 async function submitSupplyRequest() {
   const name = document.getElementById('supply-name')?.value?.trim();
