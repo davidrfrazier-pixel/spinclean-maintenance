@@ -518,6 +518,8 @@ let state = {
   messages: [], messageChanLocId: null,
   msgRecipientType: 'location', msgRecipientId: null,
   msgRecipientPickerOpen: false,
+  msgView: 'dashboard', // 'dashboard' or 'thread'
+  msgThreadType: null, msgThreadId: null, msgThreadLabel: null,
   notifCount: 0,
   // Schedule
   shifts: [], weekOffset: 0,
@@ -1316,12 +1318,156 @@ function msgRecipientTag(m) {
   return '';
 }
 
-function renderMessages() {
-  const canSwitchChannels = state.user?.role === 'admin' || state.user?.role === 'manager';
-  const visible = getVisibleMessages(state.messages);
-  const msgs = [...visible].reverse();
+function openMsgThread(type, id, label) {
+  state.msgView = 'thread';
+  state.msgThreadType = type;
+  state.msgThreadId = id;
+  state.msgThreadLabel = label;
+  state.msgRecipientType = type;
+  state.msgRecipientId = type === 'location' ? null : id;
+  // Mark visible thread messages as read
+  const threadMsgs = getThreadMessages(type, id);
+  dbMarkMessagesRead(threadMsgs, state.user.id);
+  state.notifCount = Math.max(0, state.notifCount - threadMsgs.filter(m => {
+    const rb = m.read_by || [];
+    return !rb.includes(state.user.id) && m.user_id !== state.user.id;
+  }).length);
+  render();
+  setTimeout(() => { const list = document.querySelector('.msg-list'); if (list) list.scrollTop = list.scrollHeight; }, 50);
+}
 
-  // Build recipient picker options
+function closeMsgThread() {
+  state.msgView = 'dashboard';
+  state.msgThreadType = null;
+  state.msgThreadId = null;
+  state.msgThreadLabel = null;
+  render();
+}
+
+function getThreadMessages(type, id) {
+  return state.messages.filter(m => {
+    const rt = m.recipient_type || 'location';
+    if (type === 'location') return rt === 'location';
+    if (type === 'role') return rt === 'role' && m.recipient_id === id;
+    if (type === 'dm') return rt === 'dm' && (
+      (m.user_id === state.user?.id && m.recipient_id === id) ||
+      (m.user_id === id && m.recipient_id === state.user?.id)
+    );
+    return false;
+  });
+}
+
+function renderMsgDashboard() {
+  const canSwitchChannels = state.user?.role === 'admin' || state.user?.role === 'manager';
+  const userId = state.user?.id;
+  const allVisible = getVisibleMessages(state.messages);
+
+  // Location channels
+  const locMsgs = allVisible.filter(m => !m.recipient_type || m.recipient_type === 'location');
+  const locUnread = locMsgs.filter(m => !(m.read_by||[]).includes(userId) && m.user_id !== userId).length;
+  const locLast = locMsgs[0];
+  const locName = state.myLocations.find(l => l.id === state.messageChanLocId)?.name || 'Location';
+
+  // Role group threads
+  const roles = ['admin','manager','maintenance','attendant'];
+  const roleLabels = { admin:'Admins', manager:'Managers', maintenance:'Maintenance', attendant:'Attendants' };
+  const roleThreads = roles.map(r => {
+    const msgs = allVisible.filter(m => m.recipient_type === 'role' && m.recipient_id === r);
+    const unread = msgs.filter(m => !(m.read_by||[]).includes(userId) && m.user_id !== userId).length;
+    const last = msgs[0];
+    return { role: r, label: roleLabels[r], count: msgs.length, unread, last };
+  }).filter(t => t.count > 0);
+
+  // DM threads — group by the other person
+  const dmMsgs = allVisible.filter(m => m.recipient_type === 'dm');
+  const dmPeers = {};
+  dmMsgs.forEach(m => {
+    const peerId = m.user_id === userId ? m.recipient_id : m.user_id;
+    if (!dmPeers[peerId]) dmPeers[peerId] = { msgs: [], unread: 0 };
+    dmPeers[peerId].msgs.push(m);
+    if (!(m.read_by||[]).includes(userId) && m.user_id !== userId) dmPeers[peerId].unread++;
+  });
+  const dmThreads = Object.entries(dmPeers).map(([peerId, data]) => {
+    const emp = state.employees.find(e => e.id === peerId);
+    return { peerId, name: emp?.name || 'Unknown', role: emp?.role || '', msgs: data.msgs, unread: data.unread, last: data.msgs[0] };
+  }).sort((a,b) => new Date(b.last?.created_at||0) - new Date(a.last?.created_at||0));
+
+  // People available for new DM
+  const existingDmPeers = new Set(Object.keys(dmPeers));
+  const newDmPeople = state.employees.filter(e => e.id !== userId && !existingDmPeers.has(e.id));
+
+  function threadRow(icon, label, sub, unread, onclick, avatarBg) {
+    return '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s;" onclick="' + onclick + '" onmouseover="this.style.background=\'var(--bg2)\'" onmouseout="this.style.background=\'transparent\'">' +
+      '<div style="width:40px;height:40px;border-radius:50%;background:' + (avatarBg || 'var(--navy)') + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">' + icon + '</div>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">' +
+          '<div style="font-weight:600;font-size:14px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + label + '</div>' +
+          (unread > 0 ? '<span style="background:var(--blue);color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;flex-shrink:0;">' + unread + '</span>' : '') +
+        '</div>' +
+        (sub ? '<div style="font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">' + sub + '</div>' : '') +
+      '</div>' +
+      '<div style="color:var(--text2);flex-shrink:0;">' + ICONS.ico16 + '</div>' +
+    '</div>';
+  }
+
+  return `
+    <div class="page-header">
+      <div class="page-title">Messages</div>
+      <div class="page-sub">Conversations & channels</div>
+    </div>
+    ${canSwitchChannels && state.myLocations.length > 1 ? `
+      <div class="channel-tabs">
+        ${state.myLocations.map(l => `
+          <button class="channel-tab ${l.id === state.messageChanLocId ? 'active' : ''}" onclick="switchMessageChan('${l.id}')">${l.name}</button>
+        `).join('')}
+      </div>` : ''}
+
+    <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">${ICONS.mapPin} Location Channel</div>
+    <div class="card" style="margin-bottom:16px;overflow:hidden;">
+      ${threadRow(ICONS.chat, locName + ' — Everyone', locLast ? (locLast.users?.name || 'Unknown') + ': ' + locLast.body.substring(0,50) + (locLast.body.length > 50 ? '…' : '') : 'No messages yet', locUnread, "openMsgThread('location','" + state.messageChanLocId + "','" + locName.replace(/'/g,"\\'") + "')", 'var(--navy)')}
+    </div>
+
+    ${roleThreads.length > 0 ? `
+      <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">${ICONS.users} Role Groups</div>
+      <div class="card" style="margin-bottom:16px;overflow:hidden;">
+        ${roleThreads.map(t => threadRow(
+          t.label.charAt(0),
+          t.label,
+          t.last ? (t.last.users?.name || 'Unknown') + ': ' + t.last.body.substring(0,50) + (t.last.body.length > 50 ? '…' : '') : '',
+          t.unread,
+          "openMsgThread('role','" + t.role + "','" + t.label + "')",
+          '#4338CA'
+        )).join('')}
+      </div>` : ''}
+
+    <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">${ICONS.chat} Direct Messages</div>
+    <div class="card" style="margin-bottom:16px;overflow:hidden;">
+      ${dmThreads.length > 0 ? dmThreads.map(t => threadRow(
+        getInitials(t.name),
+        t.name,
+        t.last ? (t.last.user_id === userId ? 'You' : t.name.split(' ')[0]) + ': ' + t.last.body.substring(0,50) + (t.last.body.length > 50 ? '…' : '') : '',
+        t.unread,
+        "openMsgThread('dm','" + t.peerId + "','" + t.name.replace(/'/g,"\\'") + "')",
+        '#7E22CE'
+      )).join('') : ''}
+      ${newDmPeople.length > 0 ? `
+        <div style="padding:10px 14px;border-top:${dmThreads.length > 0 ? '1px solid var(--border)' : 'none'};">
+          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;">Start a conversation</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            ${newDmPeople.map(e => '<button onclick="openMsgThread(\'dm\',\'' + e.id + '\',\'' + e.name.replace(/'/g,"\\'") + '\')" style="font-size:12px;padding:4px 10px;border-radius:99px;border:1.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;transition:all .15s;" onmouseover="this.style.background=\'var(--bg2)\'" onmouseout="this.style.background=\'var(--bg)\'">' + e.name.split(' ')[0] + '</button>').join('')}
+          </div>
+        </div>` : ''}
+      ${dmThreads.length === 0 && newDmPeople.length === 0 ? '<div class="empty-state" style="padding:16px 0;"><div class="empty-sub">No direct messages yet.</div></div>' : ''}
+    </div>`;
+}
+
+function renderMsgThread() {
+  const type = state.msgThreadType;
+  const id = state.msgThreadId;
+  const label = state.msgThreadLabel || 'Thread';
+  const threadMsgs = [...getThreadMessages(type, id)].reverse();
+
+  // Recipient select for compose (allows switching within thread view)
   const locOptions = state.myLocations.map(l =>
     '<option value="location:' + l.id + '"' + (state.msgRecipientType === 'location' && state.messageChanLocId === l.id ? ' selected' : '') + '>' + l.name + ' (everyone)</option>'
   ).join('');
@@ -1333,28 +1479,27 @@ function renderMessages() {
     '<option value="dm:' + e.id + '"' + (state.msgRecipientType === 'dm' && state.msgRecipientId === e.id ? ' selected' : '') + '>' + e.name + ' (' + e.role + ')</option>'
   ).join('');
 
+  const threadColor = type === 'dm' ? '#7E22CE' : type === 'role' ? '#4338CA' : 'var(--navy)';
+
   return `
-    <div class="page-header">
-      <div class="page-title">Messages</div>
-      <div class="page-sub">${state.myLocations.find(l=>l.id===state.messageChanLocId)?.name || ''}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <button onclick="closeMsgThread()" style="background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;display:flex;">${ICONS.ico0}</button>
+      <div>
+        <div class="page-title" style="font-size:18px;">${label}</div>
+        <div class="page-sub" style="font-size:12px;">${type === 'location' ? 'Location channel' : type === 'role' ? 'Role group' : 'Direct message'} · ${threadMsgs.length} message${threadMsgs.length !== 1 ? 's' : ''}</div>
+      </div>
     </div>
-    ${canSwitchChannels ? `
-      <div class="channel-tabs">
-        ${state.myLocations.map(l => `
-          <button class="channel-tab ${l.id === state.messageChanLocId ? 'active' : ''}" onclick="switchMessageChan('${l.id}')">${l.name}</button>
-        `).join('')}
-      </div>` : ''}
     <div class="card" style="margin-bottom:16px;">
       <div class="msg-list">
-        ${msgs.length === 0
+        ${threadMsgs.length === 0
           ? '<div class="empty-state" style="padding:20px 0;"><div class="empty-sub">No messages yet. Start the conversation!</div></div>'
-          : msgs.map(m => `
+          : threadMsgs.map(m => `
             <div class="msg-item">
-              <div class="msg-avatar" style="background:${m.is_maintenance_flag ? 'var(--red)' : m.recipient_type === 'dm' ? '#7E22CE' : 'var(--navy)'};">${getInitials(m.users?.name)}</div>
+              <div class="msg-avatar" style="background:${m.is_maintenance_flag ? 'var(--red)' : threadColor};">${getInitials(m.users?.name)}</div>
               <div class="msg-body">
                 ${m.is_maintenance_flag ? '<div class="msg-maintenance-tag">' + ICONS.alertTri + ' Maintenance Issue</div>' : ''}
                 <div class="msg-header">
-                  <div class="msg-name">${m.users?.name || 'Unknown'}${msgRecipientTag(m)}</div>
+                  <div class="msg-name">${m.users?.name || 'Unknown'}</div>
                   <div class="msg-time">${new Date(m.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true})}</div>
                 </div>
                 <div class="msg-text">${m.body}</div>
@@ -1379,12 +1524,37 @@ function renderMessages() {
     </div>`;
 }
 
+function renderMessages() {
+  if (state.msgView === 'thread') return renderMsgThread();
+  return renderMsgDashboard();
+}
+
 // ─── SUPPLIES ──────────────────────────────────────────────────────────────
 function renderSupplies() {
   const isAdmin = state.user?.role === 'admin' || state.user?.role === 'manager';
+  const myRequests = state.supplyRequests.filter(r => r.user_id === state.user?.id).slice(0, 5);
   const open = state.supplyRequests.filter(r => r.status === 'open');
   const ordered = state.supplyRequests.filter(r => r.status === 'ordered' || r.status === 'in_progress');
   const resolved = state.supplyRequests.filter(r => r.status === 'resolved').slice(0, 5);
+
+  const myRequestsHtml = myRequests.length > 0 ? `
+    <div style="margin-bottom:18px;">
+      <div style="font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+        ${ICONS.users} My Recent Requests
+      </div>
+      ${myRequests.map(r => {
+        const statusMap = { open: 'supply-open', ordered: 'supply-ordered', in_progress: 'supply-ordered', resolved: 'supply-resolved' };
+        const statusLabel = { open: 'Open', ordered: 'Ordered', in_progress: 'In Progress', resolved: 'Resolved' };
+        return '<div class="supply-item" style="border-left:3px solid var(--blue);">' +
+          '<div class="supply-urgency-dot ' + r.urgency + '"></div>' +
+          '<div class="supply-info">' +
+            '<div class="supply-name">' + r.supply_name + '</div>' +
+            '<div class="supply-meta">' + new Date(r.created_at).toLocaleDateString() + ' · ' + r.urgency + (r.notes ? ' · ' + r.notes : '') + '</div>' +
+          '</div>' +
+          '<span class="supply-status-badge ' + (statusMap[r.status] || '') + '">' + (statusLabel[r.status] || r.status) + '</span>' +
+        '</div>';
+      }).join('')}
+    </div>` : '';
 
   return `
     <div class="page-header">
@@ -1411,6 +1581,8 @@ function renderSupplies() {
       </div>
       <button class="btn btn-primary" style="width:100%;" onclick="submitSupplyRequest()">Submit request</button>
     </div>
+
+    ${myRequestsHtml}
 
     ${open.length > 0 ? `
       <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Open (${open.length})</div>
@@ -1569,7 +1741,9 @@ async function goTab(tab) {
     if (tab === 'log' || state.log.length === 0) state.log = await loadLog(state.activeLocId);
   }
   if (tab === 'messages') {
-    // Refresh messages and mark visible ones as read
+    state.msgView = 'dashboard';
+    state.msgThreadType = null;
+    state.msgThreadId = null;
     state.messages = await dbGetMessages(state.messageChanLocId || state.activeLocId);
     if (state.employees.length === 0) dbGetEmployees().then(e => { state.employees = e; render(); });
     const visible = getVisibleMessages(state.messages);
