@@ -2788,35 +2788,92 @@ function setMachineFilter(f) { state.machineFilter=f; render(); }
 // ─── STARTUP ───────────────────────────────────────────────────────────────
 
 // ─── Profile ───────────────────────────────────────────────────────────────
-function showProfile() {
+function showProfile(editing=false) {
   const u = state.user;
   const avHtml = u?.avatar_url
     ? `<img src="${u.avatar_url}" alt="${u.name}" style="width:100%;height:100%;object-fit:cover;"/>`
     : `<span style="font-size:28px;font-weight:700;">${getInitials(u?.name)}</span>`;
-  state.modalContent = `
-    <div class="modal-title">My Profile</div>
-    <div style="text-align:center;margin-bottom:20px;">
-      <div style="position:relative;width:80px;height:80px;margin:0 auto 12px;">
-        <div style="width:80px;height:80px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,0.15);">${avHtml}</div>
-        <div onclick="document.getElementById('profile-upload').click()" style="position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;border:2px solid #fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;">✏️</div>
+
+  if (editing) {
+    state.modalContent = `
+      <div class="modal-title">Edit Profile</div>
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="position:relative;width:80px;height:80px;margin:0 auto 12px;">
+          <div style="width:80px;height:80px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,0.15);">${avHtml}</div>
+          <div onclick="document.getElementById('profile-upload').click()" style="position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;border:2px solid #fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;">✏️</div>
+        </div>
+        <input type="file" id="profile-upload" accept="image/*" style="display:none;" onchange="handleProfileUpload(event)"/>
+        ${state.profileUploading ? '<div style="font-size:12px;color:var(--text2);margin-top:4px;">Uploading...</div>' : ''}
+        <div style="font-size:12px;color:var(--text2);margin-top:6px;">Tap the pencil to change your photo</div>
       </div>
-      <input type="file" id="profile-upload" accept="image/*" style="display:none;" onchange="handleProfileUpload(event)"/>
-      ${state.profileUploading ? '<div style="font-size:12px;color:var(--text2);margin-top:4px;">Uploading...</div>' : ''}
-      <div style="font-size:16px;font-weight:700;color:var(--navy);">${u?.name}</div>
-      <div style="font-size:13px;color:var(--text2);">${u?.email}</div>
-      <span style="display:inline-block;margin-top:6px;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;background:var(--navy);color:#fff;">${roleLabel(u?.role)}</span>
-    </div>
-    <div style="background:var(--bg);border-radius:var(--radius);padding:12px;margin-bottom:16px;">
-      <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Assigned locations</div>
-      ${state.locations.map(l => `<div style="font-size:13px;padding:4px 0;border-bottom:1px solid var(--border);">${l.name}</div>`).join('') || '<div style="font-size:13px;color:var(--text2);">None assigned</div>'}
-    </div>
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <button class="btn" style="width:100%;text-align:left;" onclick="goTab('timesheets');closeModal();">⏱ My hours</button>
-      <button class="btn" style="width:100%;text-align:left;" onclick="goTab('hr');closeModal();">📁 Documents</button>
-      <div style="height:1px;background:var(--border);"></div>
-      <button class="btn danger" style="width:100%;" onclick="logout()">🚪 Sign out</button>
-    </div>`;
+      <div class="field"><label>Full name <span class="req">*</span></label>
+        <input id="edit-name" value="${u?.name||''}" placeholder="Your full name"/>
+      </div>
+      <div class="field"><label>Email</label>
+        <input value="${u?.email||''}" disabled style="opacity:.5;cursor:not-allowed;"/>
+        <div class="field-hint">Email cannot be changed. Contact your admin.</div>
+      </div>
+      <div class="field"><label>Phone</label>
+        <input id="edit-phone" value="${u?.phone||''}" placeholder="(555) 000-0000" type="tel"/>
+      </div>
+      <div id="profile-edit-error" class="alert error" style="display:none;margin-top:8px;"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">
+        <button class="btn" onclick="showProfile(false)">Cancel</button>
+        <button class="btn primary" onclick="saveProfile()">Save changes</button>
+      </div>`;
+  } else {
+    state.modalContent = `
+      <div class="modal-title">My Profile</div>
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="position:relative;width:80px;height:80px;margin:0 auto 12px;">
+          <div style="width:80px;height:80px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,0.15);">${avHtml}</div>
+          <div onclick="document.getElementById('profile-upload').click()" style="position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;border:2px solid #fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;">✏️</div>
+        </div>
+        <input type="file" id="profile-upload" accept="image/*" style="display:none;" onchange="handleProfileUpload(event)"/>
+        ${state.profileUploading ? '<div style="font-size:12px;color:var(--text2);margin-top:4px;">Uploading...</div>' : ''}
+        <div style="font-size:16px;font-weight:700;color:var(--navy);">${u?.name}</div>
+        <div style="font-size:13px;color:var(--text2);">${u?.email}</div>
+        ${u?.phone ? `<div style="font-size:13px;color:var(--text2);margin-top:2px;">${u.phone}</div>` : ''}
+        <span style="display:inline-block;margin-top:6px;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;background:var(--navy);color:#fff;">${roleLabel(u?.role)}</span>
+      </div>
+      <button class="btn" style="width:100%;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="showProfile(true)">
+        ✏️ Edit profile
+      </button>
+      <div style="background:var(--bg);border-radius:var(--radius);padding:12px;margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Assigned locations</div>
+        ${state.locations.map(l => `<div style="font-size:13px;padding:5px 0;border-bottom:1px solid var(--border);">${l.name}</div>`).join('') || '<div style="font-size:13px;color:var(--text2);">None assigned</div>'}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="btn" style="width:100%;text-align:left;" onclick="goTab('timesheets');closeModal();">⏱ My hours</button>
+        <button class="btn" style="width:100%;text-align:left;" onclick="goTab('hr');closeModal();">📁 Documents</button>
+        <div style="height:1px;background:var(--border);"></div>
+        <button class="btn danger" style="width:100%;" onclick="logout()">🚪 Sign out</button>
+      </div>`;
+  }
   renderModal();
+}
+
+async function saveProfile() {
+  const name = document.getElementById('edit-name')?.value?.trim();
+  const phone = document.getElementById('edit-phone')?.value?.trim();
+  const errEl = document.getElementById('profile-edit-error');
+  if (!name) { errEl.textContent = 'Name is required.'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  const btn = document.querySelector('#modal-inner .btn.primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+  const { error } = await db.from('users').update({ name, phone: phone || null }).eq('id', state.user.id);
+  if (error) {
+    errEl.textContent = 'Error saving: ' + error.message;
+    errEl.style.display = 'block';
+    if (btn) { btn.disabled = false; btn.textContent = 'Save changes'; }
+    return;
+  }
+  state.user.name = name;
+  state.user.phone = phone || null;
+  // Update in employees list if loaded
+  const emp = state.employees.find(e => e.id === state.user.id);
+  if (emp) { emp.name = name; emp.phone = phone || null; }
+  showProfile(false);
 }
 
 async function handleProfileUpload(e) {
