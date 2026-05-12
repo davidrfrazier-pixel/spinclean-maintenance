@@ -1067,14 +1067,14 @@ function renderClockWidget() {
       </div>
       <div style="margin-top:16px;">
         <button class="clock-btn ${isClockedIn ? 'out' : 'in'}" onclick="${isClockedIn ? 'handleClockOut()' : 'handleClockIn()'}" ${state.clockLoading ? 'disabled' : ''}>
-          ${state.clockLoading ? '⏳ Please wait...' : isClockedIn ? '${ICONS.ico13} Clock Out' : '${ICONS.ico14} Clock In' + (loc ? ' at ' + loc.name : '')}
+          ${state.clockLoading ? '⏳ Please wait...' : isClockedIn ? ICONS.ico13 + ' Clock Out' : ICONS.ico14 + ' Clock In' + (loc ? ' at ' + loc.name : '')}
         </button>
       </div>
       <div class="gps-status">
         ${state.gpsStatus === 'checking' ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;display:inline-block;vertical-align:middle;"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"/></svg> Checking location...' : ''}
-        ${state.gpsStatus === 'ok' ? '${ICONS.checkSquare} Location verified' : ''}
-        ${state.gpsStatus === 'warn' ? '${ICONS.alertTri} Outside normal range — clocked in anyway' : ''}
-        ${!state.gpsStatus ? '${ICONS.mapPin} GPS will verify your location on clock-in' : ''}
+        ${state.gpsStatus === 'ok' ? ICONS.checkSquare + ' Location verified' : ''}
+        ${state.gpsStatus === 'warn' ? ICONS.alertTri + ' Outside normal range — clocked in anyway' : ''}
+        ${!state.gpsStatus ? ICONS.mapPin + ' GPS will verify your location on clock-in' : ''}
       </div>
     </div>`;
 }
@@ -1265,7 +1265,7 @@ function renderMessages() {
             <div class="msg-item">
               <div class="msg-avatar" style="background:${m.is_maintenance_flag ? 'var(--red)' : 'var(--navy)'};">${getInitials(m.users?.name)}</div>
               <div class="msg-body">
-                ${m.is_maintenance_flag ? '<div class="msg-maintenance-tag">${ICONS.alertTri} Maintenance Issue</div>' : ''}
+                ${m.is_maintenance_flag ? '<div class="msg-maintenance-tag">' + ICONS.alertTri + ' Maintenance Issue</div>' : ''}
                 <div class="msg-header">
                   <div class="msg-name">${m.users?.name || 'Unknown'}</div>
                   <div class="msg-time">${new Date(m.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true})}</div>
@@ -1448,12 +1448,12 @@ function renderTimesheets() {
             <div class="timesheet-date">${new Date(t.clock_in).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
             <div class="timesheet-times" style="flex:1;">
               <div class="timesheet-in">${ICONS.ico14} ${formatTime(t.clock_in)}</div>
-              <div class="timesheet-out">${t.clock_out ? '${ICONS.ico13} ' + formatTime(t.clock_out) : '<span style="color:var(--green-text);font-weight:600;font-size:12px;">Currently clocked in</span>'}</div>
+              <div class="timesheet-out">${t.clock_out ? ICONS.ico13 + ' ' + formatTime(t.clock_out) : '<span style="color:var(--green-text);font-weight:600;font-size:12px;">Currently clocked in</span>'}</div>
               <div style="font-size:11px;color:var(--text2);margin-top:2px;">${t.locations?.name || '—'}</div>
             </div>
             <div>
               <div class="timesheet-hours">${hoursLabel(t.clock_in, t.clock_out)}</div>
-              <div class="${t.gps_verified ? 'gps-ok' : 'gps-warn'}">${t.gps_verified ? '${ICONS.checkSquare} GPS' : '${ICONS.alertTri} GPS'}</div>
+              <div class="${t.gps_verified ? 'gps-ok' : 'gps-warn'}">${t.gps_verified ? ICONS.checkSquare + ' GPS' : ICONS.alertTri + ' GPS'}</div>
             </div>
           </div>`).join('')}
   `;
@@ -1997,7 +1997,7 @@ function machineCardHtml(m) {
   return `<div class="machine-card ${cls}" onclick="selectMachine('${m.id}')">
     <div class="machine-header">
       <div>
-        <div class="machine-id">${m.machine_id}${m.flagged?' ${ICONS.flag}':''}</div>
+        <div class="machine-id">${m.machine_id}${m.flagged?' '+ICONS.flag:''}</div>
         <div class="machine-type">${m.type}</div>
       </div>
       <span class="status-badge ${badgeCls}">${badgeLbl}</span>
@@ -2043,11 +2043,11 @@ function renderDetail() {
     <div class="detail-panel">
       <div class="detail-header">
         <div>
-          <div class="detail-title">${m.machine_id} — ${m.type}${m.flagged?' ${ICONS.flag}':''}</div>
+          <div class="detail-title">${m.machine_id} — ${m.type}${m.flagged?' '+ICONS.flag:''}</div>
           <div style="font-size:12px;color:var(--text2);margin-top:2px;">${m.model}</div>
         </div>
         <div class="btn-row">
-          <button class="btn ${m.flagged?'unflag-btn':'flag-btn'}" onclick="toggleFlag('${m.id}')">${m.flagged?'Remove flag':'${ICONS.flag} Flag'}</button>
+          <button class="btn ${m.flagged?'unflag-btn':'flag-btn'}" onclick="toggleFlag('${m.id}')">${m.flagged?'Remove flag':ICONS.flag+' Flag'}</button>
           <button class="btn primary" onclick="openLogModal('${m.machine_id}')">+ Log service</button>
         </div>
       </div>
@@ -3111,7 +3111,7 @@ function renderChecklist() {
       const isExpanded = state.maintExpanded[m.id] !== false;
       const d = daysSince(m.last_service_date);
       const age = m.install_year ? currentYear() - m.install_year : 0;
-      const reason = m.flagged ? '${ICONS.flag} Flagged' : m.status==='error' ? '${ICONS.alertTri} Error' : d>90 ? d+'d since service' : age>=8 ? age+'yr old' : 'Due';
+      const reason = m.flagged ? ICONS.flag+' Flagged' : m.status==='error' ? ICONS.alertTri+' Error' : d>90 ? d+'d since service' : age>=8 ? age+'yr old' : 'Due';
       return `<div class="maint-machine-section">
         <div class="maint-machine-header" onclick="toggleMaintExpanded('${m.id}')">
           <div>
@@ -3131,7 +3131,7 @@ function renderChecklist() {
               <div style="flex:1;">
                 <div class="maint-task-title">${t.title}</div>
                 ${t.required ? '<div class="maint-task-meta" style="color:var(--red-text);">Required</div>' : ''}
-                ${t.photo ? '<div class="maint-task-meta">${ICONS.camera} Photo recommended</div>' : ''}
+                ${t.photo ? '<div class="maint-task-meta">' + ICONS.camera + ' Photo recommended</div>' : ''}
               </div>
             </div>`;
           }).join('')}
@@ -3174,7 +3174,7 @@ function renderAttendantChecklist() {
               <div class="todo-check ${isDone?'checked':''}" onclick="toggleCheckItem('${t.id}')"></div>
               <div style="flex:1;">
                 <div class="maint-task-title">${t.task_name}</div>
-                ${t.photo_required ? '<div class="maint-task-meta" style="color:var(--amber-text);">${ICONS.camera} Photo required</div>' : ''}
+                ${t.photo_required ? '<div class="maint-task-meta" style="color:var(--amber-text);">' + ICONS.camera + ' Photo required</div>' : ''}
               </div>
             </div>`;
           }).join('')}
@@ -3201,7 +3201,7 @@ async function logMaintEntry(machineId) {
   await db.from('machines').update({ last_service_date: today(), status: 'ok', updated_at: new Date().toISOString() }).eq('id', machineId);
   m.last_service_date = today(); m.status = 'ok';
   state.log = await loadLog(state.activeLocId);
-  alert('${ICONS.ico18} Service entry logged for ' + m.machine_id);
+  alert('Service entry logged for ' + m.machine_id);
   render();
 }
 
